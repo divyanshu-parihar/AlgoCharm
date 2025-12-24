@@ -74,13 +74,63 @@ body {
 }
 
 .tech-border::after {
+
   content: '';
+
   position: absolute;
+
   bottom: -1px;
+
   right: -1px;
+
   width: 10px;
+
   height: 10px;
+
   border-bottom: 2px solid var(--color-accent-secondary);
+
   border-right: 2px solid var(--color-accent-secondary);
+
   opacity: 0.5;
+
+}
+
+
+
+@keyframes mascot-float {
+
+  0%, 100% { transform: translateY(0); }
+
+  50% { transform: translateY(-15px); }
+
+}
+
+
+
+.animate-mascot-float {
+
+  animation: mascot-float 6s ease-in-out infinite;
+
+}
+
+
+
+.mascot-hover-effect {
+
+  transition: all 0.5s cubic-bezier(0.23, 1, 0.32, 1);
+
+  filter: drop-shadow(0 0 0px rgba(242, 95, 37, 0));
+
+  will-change: transform, filter;
+
+}
+
+
+
+.mascot-hover-effect:hover {
+
+  transform: scale(1.05) rotate(1deg);
+
+  filter: drop-shadow(0 0 30px rgba(242, 95, 37, 0.4));
+
 }
