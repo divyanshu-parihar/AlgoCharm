@@ -1,0 +1,6 @@
+{
+    "mission_id": "arrays-1",
+    "title": "The Vault Door",
+    "language": "go",
+    "expected": "30"
+}

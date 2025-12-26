@@ -1,0 +1,6 @@
+{
+  "mission_id": "arrays-5",
+  "title": "The Key Pair",
+  "language": "go",
+  "expected": "[1 3]"
+}
