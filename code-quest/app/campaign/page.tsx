@@ -4,6 +4,9 @@ import { modules } from "@/db/schema";
 import { Lock, Map, Play, Star } from "lucide-react";
 import Link from "next/link";
 
+// Force dynamic rendering - this page queries the database
+export const dynamic = 'force-dynamic';
+
 // Mock data removed
 // const MOCK_MODULES = ... 
 

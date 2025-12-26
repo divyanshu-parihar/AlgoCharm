@@ -7,6 +7,9 @@ import { notFound } from "next/navigation";
 import { eq, and } from "drizzle-orm";
 import { MarkdownRenderer } from "@/components/MarkdownRenderer";
 
+// Force dynamic rendering - this page queries the database
+export const dynamic = 'force-dynamic';
+
 export default async function LessonPage({ params }: { params: Promise<{ module: string, lesson: string }> }) {
   const { module: moduleSlug, lesson: lessonSlug } = await params;
 

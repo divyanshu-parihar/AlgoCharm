@@ -6,6 +6,9 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { eq } from "drizzle-orm";
 
+// Force dynamic rendering - this page queries the database
+export const dynamic = 'force-dynamic';
+
 export default async function ModulePage({ params }: { params: Promise<{ module: string }> }) {
     const { module: moduleSlug } = await params;
 
