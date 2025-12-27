@@ -29,6 +29,7 @@ const PROBLEM_SIGNATURES: Record<string, {
   outputType: { go: string; ts: string; cpp: string };
   functionName: string;
   examples: string;
+  description?: string;  // Optional LeetCode-style description
 }> = {
   // DATA VAULT (Arrays & Hashing)
   "spot-repeat": {
@@ -99,6 +100,7 @@ Example 2: s = "rat", t = "car" → false`
     inputType: { go: "(nums []int, target int)", ts: "(nums: number[], target: number)", cpp: "(vector<int>& nums, int target)" },
     outputType: { go: "[]int", ts: "number[]", cpp: "vector<int>" },
     functionName: "twoSumII",
+    description: "Given a 1-indexed array of integers that is already sorted in non-decreasing order, find two numbers such that they add up to a specific target number. Return the indices of the two numbers (1-indexed). You must use only constant extra space.",
     examples: `Example: nums = [2,7,11,15], target = 9 → [1,2] (1-indexed)`
   },
   "triple-match": {
@@ -1015,11 +1017,10 @@ function generateGoStarter(id: string, title: string, desc: string, difficulty: 
   const inputType = sig.inputType.go.replace(/^\(|\)$/g, '');
   const outputType = sig.outputType.go;
 
-  // Use examples as primary description if db description is empty/short
-  const hasGoodDesc = cleanDesc.length > 49;
-  const problemDesc = hasGoodDesc
-    ? cleanDesc.split('\n').slice(0, 5).join('\n * ')
-    : `Implement ${funcName} to solve the ${title} problem.`;
+  // Priority: sig.description > db description (if good) > fallback
+  const problemDesc = sig.description
+    || (cleanDesc.length > 50 ? cleanDesc.split('\n').slice(0, 5).join('\n * ') : null)
+    || `Implement ${funcName} to solve the ${title} problem.`;
 
   return `/*
  * ${title}
