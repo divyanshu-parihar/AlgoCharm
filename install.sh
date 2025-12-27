@@ -1,14 +1,10 @@
 #!/bin/bash
-# Charm CLI Installer for Private Repository
-# Usage: ./install.sh
-# 
-# For private repos, users need to:
-# 1. Have GitHub CLI (gh) installed and authenticated
-# 2. Have access to the repository
+# Charm CLI Installer
+# Usage: curl -sSL https://raw.githubusercontent.com/divyanshu-parihar/charm-cli/main/install.sh | bash
 
 set -e
 
-REPO="divyanshu-parihar/AlgoCharm"
+REPO="divyanshu-parihar/charm-cli"
 INSTALL_DIR="/usr/local/bin"
 BINARY_NAME="charm"
 
@@ -66,68 +62,59 @@ detect_platform() {
             ;;
     esac
     
-    PATTERN="charm-${OS}-${ARCH}"
     echo -e "${YELLOW}Platform: ${OS}-${ARCH}${NC}"
 }
 
-check_gh_cli() {
-    if ! command -v gh &> /dev/null; then
-        echo -e "${RED}GitHub CLI (gh) is required for private repository access.${NC}"
-        echo ""
-        echo -e "${YELLOW}Install GitHub CLI:${NC}"
-        echo "  macOS:  brew install gh"
-        echo "  Linux:  https://github.com/cli/cli#installation"
-        echo ""
-        echo -e "${YELLOW}Then authenticate:${NC}"
-        echo "  gh auth login"
-        echo ""
+get_latest_release() {
+    echo -e "${YELLOW}Fetching latest release...${NC}"
+    
+    LATEST_URL="https://api.github.com/repos/${REPO}/releases/latest"
+    
+    if command -v curl &> /dev/null; then
+        RELEASE_INFO=$(curl -sL "$LATEST_URL")
+    elif command -v wget &> /dev/null; then
+        RELEASE_INFO=$(wget -qO- "$LATEST_URL")
+    else
+        echo -e "${RED}Error: curl or wget is required${NC}"
         exit 1
     fi
     
-    # Check if authenticated
-    if ! gh auth status &> /dev/null; then
-        echo -e "${RED}GitHub CLI is not authenticated.${NC}"
+    # Extract download URL for our platform
+    DOWNLOAD_URL=$(echo "$RELEASE_INFO" | grep -o "https://[^\"]*charm-${OS}-${ARCH}[^\"]*" | head -1)
+    
+    if [ -z "$DOWNLOAD_URL" ]; then
+        echo -e "${RED}Could not find release for ${OS}-${ARCH}${NC}"
         echo ""
-        echo -e "${YELLOW}Run: gh auth login${NC}"
+        echo -e "${YELLOW}No releases found. The maintainer may not have published a release yet.${NC}"
         exit 1
     fi
     
-    echo -e "${GREEN}✓ GitHub CLI authenticated${NC}"
+    VERSION=$(echo "$RELEASE_INFO" | grep -o '"tag_name": *"[^"]*"' | head -1 | cut -d'"' -f4)
+    echo -e "${GREEN}Found: ${VERSION}${NC}"
 }
 
 download_and_install() {
-    echo -e "${YELLOW}Downloading ${PATTERN}...${NC}"
+    echo -e "${YELLOW}Downloading charm CLI...${NC}"
     
     TMP_DIR=$(mktemp -d)
-    cd "$TMP_DIR"
+    TMP_FILE="${TMP_DIR}/${BINARY_NAME}"
     
-    # Download using GitHub CLI
-    if ! gh release download --repo "$REPO" --pattern "${PATTERN}*" 2>/dev/null; then
-        echo -e "${RED}Failed to download release.${NC}"
-        echo -e "${YELLOW}Make sure you have access to the repository and a release exists.${NC}"
-        rm -rf "$TMP_DIR"
-        exit 1
-    fi
-    
-    # Find downloaded file
-    DOWNLOADED_FILE=$(ls ${PATTERN}* 2>/dev/null | head -1)
-    if [ -z "$DOWNLOADED_FILE" ]; then
-        echo -e "${RED}Download failed - no matching file found.${NC}"
-        rm -rf "$TMP_DIR"
-        exit 1
-    fi
-    
-    chmod +x "$DOWNLOADED_FILE"
-    
-    # Install
-    if [ -w "$INSTALL_DIR" ]; then
-        mv "$DOWNLOADED_FILE" "${INSTALL_DIR}/${BINARY_NAME}"
+    if command -v curl &> /dev/null; then
+        curl -sL "$DOWNLOAD_URL" -o "$TMP_FILE"
     else
-        echo -e "${YELLOW}Requesting sudo access...${NC}"
-        sudo mv "$DOWNLOADED_FILE" "${INSTALL_DIR}/${BINARY_NAME}"
+        wget -q "$DOWNLOAD_URL" -O "$TMP_FILE"
     fi
     
-    cd -
+    chmod +x "$TMP_FILE"
+    
+    # Check if we can write to install dir
+    if [ -w "$INSTALL_DIR" ]; then
+        mv "$TMP_FILE" "${INSTALL_DIR}/${BINARY_NAME}"
+    else
+        echo -e "${YELLOW}Requesting sudo access to install to ${INSTALL_DIR}...${NC}"
+        sudo mv "$TMP_FILE" "${INSTALL_DIR}/${BINARY_NAME}"
+    fi
+    
     rm -rf "$TMP_DIR"
 }
 
@@ -136,20 +123,18 @@ verify_installation() {
         echo ""
         echo -e "${GREEN}✓ Charm CLI installed successfully!${NC}"
         echo ""
-        charm --version 2>/dev/null || echo "  Version: installed"
-        echo ""
         echo -e "Run ${CYAN}charm --help${NC} to get started."
         echo ""
     else
         echo -e "${YELLOW}Charm installed to ${INSTALL_DIR}/${BINARY_NAME}${NC}"
-        echo -e "Add ${INSTALL_DIR} to your PATH if not already."
+        echo -e "You may need to restart your terminal or add ${INSTALL_DIR} to PATH."
     fi
 }
 
 main() {
     print_banner
     detect_platform
-    check_gh_cli
+    get_latest_release
     download_and_install
     verify_installation
 }
