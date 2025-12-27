@@ -5,11 +5,12 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 	"os"
-	"os/exec"
 	"path/filepath"
 	"strings"
+	"time"
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -17,9 +18,10 @@ import (
 
 // SubmitRequest is the payload sent to the server
 type SubmitRequest struct {
-	MissionID string `json:"mission_id"`
-	Verdict   string `json:"verdict"`
-	APIKey    string `json:"api_key"`
+	SessionID   string                   `json:"session_id"`
+	APIKey      string                   `json:"api_key"`
+	Outputs     []map[string]interface{} `json:"outputs"`
+	OutputsHash string                   `json:"outputs_hash"`
 }
 
 // SubmitResponse is the server's response
@@ -27,18 +29,21 @@ type SubmitResponse struct {
 	Success   bool   `json:"success"`
 	Message   string `json:"message"`
 	XPAwarded int    `json:"xp_awarded"`
+	Passed    int    `json:"passed"`
+	Total     int    `json:"total"`
 }
 
 // submitCmd represents the submit command
 var submitCmd = &cobra.Command{
 	Use:   "submit",
-	Short: "Submit your solution and record progress",
-	Long: `Run tests and submit your verdict to the server.
-This will mark the mission as complete and award XP.
+	Short: "Submit your verified solution to HQ",
+	Long: `Submit your test results to the server for verification.
+You must run 'quest test' first to generate a session.
 
 Example:
-  cd arrays-1
-  quest submit`,
+  cd spin-grid
+  quest test    # Run tests first
+  quest submit  # Submit results`,
 	Run: func(cmd *cobra.Command, args []string) {
 		// 1. Check if logged in
 		apiKey := viper.GetString("api_key")
@@ -48,52 +53,38 @@ Example:
 			return
 		}
 
-		// 2. Get mission ID from current directory
-		cwd, err := os.Getwd()
+		// 2. Load session from ~/.codequest-session.json
+		home, _ := os.UserHomeDir()
+		sessionPath := filepath.Join(home, ".codequest-session.json")
+
+		sessionData, err := os.ReadFile(sessionPath)
 		if err != nil {
-			fmt.Println("❌ Error getting current directory:", err)
+			fmt.Println("❌ No test session found.")
+			fmt.Println("   Run 'quest test' first to generate a session.")
 			return
 		}
 
-		manifest, hasManifest := loadManifest(cwd)
-		missionID := filepath.Base(cwd)
-		if hasManifest {
-			missionID = manifest.MissionID
-		}
-
-		fmt.Printf("📡 Submitting mission: %s\n\n", missionID)
-
-		// 3. Run tests first
-		fmt.Println("🧪 Running tests...")
-		language := detectLanguage(cwd)
-		if language == "" {
-			fmt.Println("❌ No supported code files found.")
+		var session SessionData
+		if err := json.Unmarshal(sessionData, &session); err != nil {
+			fmt.Println("❌ Invalid session file.")
+			fmt.Println("   Run 'quest test' again to generate a new session.")
 			return
 		}
 
-		var output string
-		var runErr error
-
-		switch language {
-		case "go":
-			output, runErr = runGoCodeForSubmit(cwd)
-		case "python":
-			output, runErr = runPythonCodeForSubmit(cwd)
-		}
-
-		if runErr != nil {
-			fmt.Println("❌ Tests failed:")
-			fmt.Println(output)
-			fmt.Println("\n⚠️  Submission aborted. Fix the errors and try again.")
+		// 3. Check if session is expired
+		expiresAt, _ := time.Parse(time.RFC3339, session.ExpiresAt)
+		if time.Now().After(expiresAt) {
+			fmt.Println("❌ Session has expired.")
+			fmt.Println("   Run 'quest test' again to generate a new session.")
+			os.Remove(sessionPath)
 			return
 		}
 
-		fmt.Println("📤 Output:")
-		fmt.Println(strings.TrimSpace(output))
-		fmt.Println()
+		fmt.Printf("📡 Submitting mission: %s\n", session.MissionID)
+		fmt.Printf("   Session: %s...\n\n", session.SessionID[:8])
 
 		// 4. Ask for confirmation
-		fmt.Print("✅ Tests passed! Submit this solution? (y/n): ")
+		fmt.Print("✅ Submit this solution? (y/n): ")
 		reader := bufio.NewReader(os.Stdin)
 		response, _ := reader.ReadString('\n')
 		response = strings.TrimSpace(strings.ToLower(response))
@@ -104,17 +95,17 @@ Example:
 		}
 
 		// 5. Send to server
-		fmt.Println("\n📡 Sending verdict to HQ...")
+		fmt.Println("\n📡 Sending verified results to HQ...")
 
 		submitReq := SubmitRequest{
-			MissionID: missionID,
-			Verdict:   "passed",
-			APIKey:    apiKey,
+			SessionID:   session.SessionID,
+			APIKey:      apiKey,
+			Outputs:     session.Outputs,
+			OutputsHash: session.OutputHash,
 		}
 
 		jsonData, _ := json.Marshal(submitReq)
 
-		// Get server URL from config or use default
 		serverURL := viper.GetString("server_url")
 		if serverURL == "" {
 			serverURL = "http://localhost:3000"
@@ -128,41 +119,36 @@ Example:
 
 		if err != nil {
 			fmt.Println("⚠️  Could not reach server:", err)
-			fmt.Println("   Your progress will be recorded when connection is restored.")
-			// For now, still show success locally
-			fmt.Println("\n🎉 Mission Complete! (Offline Mode)")
+			fmt.Println("   Try again later when you have an internet connection.")
 			return
 		}
 		defer resp.Body.Close()
 
+		body, _ := io.ReadAll(resp.Body)
+
 		var submitResp SubmitResponse
-		if err := json.NewDecoder(resp.Body).Decode(&submitResp); err != nil {
+		if err := json.Unmarshal(body, &submitResp); err != nil {
 			fmt.Println("⚠️  Invalid server response")
+			fmt.Println("   Raw:", string(body))
 			return
 		}
 
 		if submitResp.Success {
 			fmt.Println("\n🎉 MISSION COMPLETE!")
 			fmt.Printf("   +%d XP Earned!\n", submitResp.XPAwarded)
+			fmt.Printf("   Tests passed: %d/%d\n", submitResp.Passed, submitResp.Total)
 			fmt.Println("\n💡 Tip: Check your campaign map for the next mission!")
+
+			// Clean up session file
+			os.Remove(sessionPath)
 		} else {
 			fmt.Printf("❌ Submission failed: %s\n", submitResp.Message)
+			if submitResp.Total > 0 {
+				fmt.Printf("   Tests passed: %d/%d\n", submitResp.Passed, submitResp.Total)
+			}
+			fmt.Println("\n💡 Tip: Run 'quest test' again to retry.")
 		}
 	},
-}
-
-func runGoCodeForSubmit(dir string) (string, error) {
-	cmd := exec.Command("go", "run", "main.go")
-	cmd.Dir = dir
-	output, err := cmd.CombinedOutput()
-	return string(output), err
-}
-
-func runPythonCodeForSubmit(dir string) (string, error) {
-	cmd := exec.Command("python3", "solution.py")
-	cmd.Dir = dir
-	output, err := cmd.CombinedOutput()
-	return string(output), err
 }
 
 func init() {

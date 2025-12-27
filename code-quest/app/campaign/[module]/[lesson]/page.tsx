@@ -6,6 +6,9 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { eq, and } from "drizzle-orm";
 import { MarkdownRenderer } from "@/components/MarkdownRenderer";
+import { MarkCompleteButton } from "@/components/MarkCompleteButton";
+import { HintTooltip, SolutionReveal } from "@/components/HintsSolution";
+import { getLessonExtras } from "@/db/lesson-extras";
 
 // Force dynamic rendering - this page queries the database
 export const dynamic = 'force-dynamic';
@@ -78,6 +81,15 @@ export default async function LessonPage({ params }: { params: Promise<{ module:
           {/* Story Content */}
           <MarkdownRenderer content={lesson.storyContent} />
 
+          {/* Hints Section (left panel) */}
+          {(() => {
+            const extras = getLessonExtras(lesson.slug);
+            if (extras) {
+              return <HintTooltip hints={extras.hints} />;
+            }
+            return null;
+          })()}
+
           {/* Theory Content (if exists) */}
           {lesson.theoryContent && (
             <div className="mt-8 pt-8 border-t border-white/10">
@@ -89,30 +101,44 @@ export default async function LessonPage({ params }: { params: Promise<{ module:
             </div>
           )}
 
-          {/* Navigation */}
-          <div className="flex justify-between pt-8 border-t border-white/10">
-            {prevLesson ? (
-              <Link
-                href={`/campaign/${moduleSlug}/${prevLesson.slug}`}
-                className="text-xs text-gray-500 hover:text-white"
-              >
-                ← {prevLesson.title}
-              </Link>
-            ) : <span />}
-            {nextLesson && (
-              <Link
-                href={`/campaign/${moduleSlug}/${nextLesson.slug}`}
-                className="text-xs text-gray-500 hover:text-white"
-              >
-                {nextLesson.title} →
-              </Link>
+          {/* Mark Complete & Navigation */}
+          <div className="pt-8 border-t border-white/10 space-y-6">
+            {/* Mark Complete CTA - only show on lessons without exercises since exercises have their own completion flow */}
+            {!lesson.hasExercise && (
+              <div className="flex justify-center">
+                <MarkCompleteButton
+                  lessonSlug={lesson.slug}
+                  isCompleted={false}
+                  nextLessonUrl={nextLesson ? `/campaign/${moduleSlug}/${nextLesson.slug}` : undefined}
+                />
+              </div>
             )}
+
+            {/* Navigation */}
+            <div className="flex justify-between">
+              {prevLesson ? (
+                <Link
+                  href={`/campaign/${moduleSlug}/${prevLesson.slug}`}
+                  className="text-xs text-gray-500 hover:text-white"
+                >
+                  ← {prevLesson.title}
+                </Link>
+              ) : <span />}
+              {nextLesson && (
+                <Link
+                  href={`/campaign/${moduleSlug}/${nextLesson.slug}`}
+                  className="text-xs text-gray-500 hover:text-white"
+                >
+                  {nextLesson.title} →
+                </Link>
+              )}
+            </div>
           </div>
         </div>
       </div>
 
       {/* RIGHT: ACTION PANEL */}
-      <div className="w-full md:w-1/2 bg-[#111] p-8 md:p-12 flex flex-col justify-center">
+      <div className="w-full md:w-1/2 bg-[#111] p-8 md:p-12 flex flex-col justify-start">
         <div className="max-w-lg mx-auto w-full space-y-8">
 
           {/* Objective Card */}
@@ -159,6 +185,23 @@ export default async function LessonPage({ params }: { params: Promise<{ module:
               </p>
             </div>
           )}
+
+          {/* Solution Reveal (right panel - below submit) */}
+          {(() => {
+            const extras = getLessonExtras(lesson.slug);
+            if (extras) {
+              return (
+                <div className="mt-6">
+                  <SolutionReveal
+                    solutions={extras.solutions}
+                    explanation={extras.explanation}
+                    patternTips={extras.patternTips}
+                  />
+                </div>
+              );
+            }
+            return null;
+          })()}
 
           {/* Status Monitor */}
           <div className="mt-12 pt-12 border-t border-white/5">
