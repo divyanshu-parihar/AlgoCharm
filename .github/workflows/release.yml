@@ -2,7 +2,7 @@ name: Release CLI
 
 on:
   push:
-    branches: [main]
+    branches: [master]
     paths:
       - 'cli/**'
       - '.github/workflows/release.yml'
@@ -96,13 +96,22 @@ jobs:
             
             **Automated release from commit:** ${{ github.sha }}
             
-            ### Installation
+            ### Installation (for private repo)
+            Download the binary for your platform below.
+            
+            **macOS/Linux:**
             ```bash
-            curl -sSL https://raw.githubusercontent.com/${{ github.repository }}/main/install.sh | bash
+            # Download and install (replace URL with your platform)
+            curl -L "<release-url>" -o charm
+            chmod +x charm
+            sudo mv charm /usr/local/bin/
             ```
             
-            ### Manual Download
-            Download the appropriate binary for your platform below.
+            **Or use GitHub CLI:**
+            ```bash
+            gh release download --repo ${{ github.repository }} --pattern "charm-$(uname -s | tr '[:upper:]' '[:lower:]')-$(uname -m | sed 's/x86_64/amd64/' | sed 's/aarch64/arm64/')" -O charm
+            chmod +x charm && sudo mv charm /usr/local/bin/
+            ```
           files: |
             dist/charm-*
             dist/checksums.txt
