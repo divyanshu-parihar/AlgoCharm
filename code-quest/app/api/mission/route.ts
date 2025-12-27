@@ -1,7 +1,17 @@
 import { NextRequest, NextResponse } from "next/server";
 import { MissionService } from "@/lib/mission-service";
+import { checkRateLimit, rateLimitHeaders } from "@/lib/rate-limit";
 
 export async function GET(request: NextRequest) {
+  // Rate limiting
+  const rateLimit = await checkRateLimit(request, '/api/mission');
+  if (!rateLimit.success) {
+    return NextResponse.json(
+      { error: "Rate limit exceeded" },
+      { status: 429, headers: rateLimitHeaders(rateLimit) }
+    );
+  }
+
   const searchParams = request.nextUrl.searchParams;
   const id = searchParams.get("id");
 

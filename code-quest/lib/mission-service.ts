@@ -1015,13 +1015,23 @@ function generateGoStarter(id: string, title: string, desc: string, difficulty: 
   const inputType = sig.inputType.go.replace(/^\(|\)$/g, '');
   const outputType = sig.outputType.go;
 
+  // Use examples as primary description if db description is empty/short
+  const hasGoodDesc = cleanDesc.length > 30;
+  const problemDesc = hasGoodDesc
+    ? cleanDesc.split('\n').slice(0, 5).join('\n * ')
+    : `Implement ${funcName} to solve the ${title} problem.`;
+
   return `/*
  * ${title}
  * Difficulty: ${capitalize(difficulty)}
  * 
- * ${cleanDesc.split('\n').slice(0, 5).join('\n * ')}
+ * ${problemDesc}
  * 
  * ${sig.examples.split('\n').join('\n * ')}
+ * 
+ * Function: ${funcName}
+ * Input: ${sig.inputType.go}
+ * Output: ${sig.outputType.go}
  */
 
 package main

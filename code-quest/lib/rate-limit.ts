@@ -1,89 +1,66 @@
-// Simple in-memory rate limiting for API routes
-// Production should use Redis or similar
+import { Redis } from '@upstash/redis';
+import { Ratelimit } from '@upstash/ratelimit';
 
-interface RateLimitEntry {
-    count: number;
-    resetTime: number;
-}
+// Initialize Redis client
+// Store credentials in env vars for security
+const redis = new Redis({
+    url: process.env.UPSTASH_REDIS_URL || 'https://sterling-man-55195.upstash.io',
+    token: process.env.UPSTASH_REDIS_TOKEN || 'AdebAAIncDFlYjg0NWU3YjNjYjQ0MjE0OGNjNjhmYWNmM2E4MzEwOHAxNTUxOTU',
+});
 
-const rateLimitStore = new Map<string, RateLimitEntry>();
+// Rate limiters for different endpoint types
+// Using sliding window algorithm for smooth rate limiting
 
-// Clean up old entries periodically
-setInterval(() => {
-    const now = Date.now();
-    for (const [key, entry] of rateLimitStore.entries()) {
-        if (entry.resetTime < now) {
-            rateLimitStore.delete(key);
-        }
-    }
-}, 60000); // Clean every minute
+// Strict: For sensitive operations (verify, admin)
+export const strictRateLimit = new Ratelimit({
+    redis,
+    limiter: Ratelimit.slidingWindow(5, '1 m'),  // 5 requests per minute
+    analytics: true,
+    prefix: 'ratelimit:strict',
+});
 
-export interface RateLimitConfig {
-    maxRequests: number;  // Max requests per window
-    windowMs: number;     // Time window in milliseconds
-}
+// Normal: For regular API calls (challenge, mission)
+export const normalRateLimit = new Ratelimit({
+    redis,
+    limiter: Ratelimit.slidingWindow(20, '1 m'),  // 20 requests per minute
+    analytics: true,
+    prefix: 'ratelimit:normal',
+});
 
-// Default limits per endpoint pattern
-export const RATE_LIMITS: Record<string, RateLimitConfig> = {
-    '/api/challenge': { maxRequests: 10, windowMs: 60000 },  // 10/min
-    '/api/verify': { maxRequests: 5, windowMs: 60000 },      // 5/min
-    '/api/mission': { maxRequests: 30, windowMs: 60000 },    // 30/min
-    '/api/admin': { maxRequests: 5, windowMs: 60000 },       // 5/min
-    '/api/user': { maxRequests: 20, windowMs: 60000 },       // 20/min
-    'default': { maxRequests: 100, windowMs: 60000 },        // 100/min fallback
+// Relaxed: For less sensitive endpoints (user profile)
+export const relaxedRateLimit = new Ratelimit({
+    redis,
+    limiter: Ratelimit.slidingWindow(60, '1 m'),  // 60 requests per minute
+    analytics: true,
+    prefix: 'ratelimit:relaxed',
+});
+
+// Auth: For login/signup attempts
+export const authRateLimit = new Ratelimit({
+    redis,
+    limiter: Ratelimit.slidingWindow(10, '1 m'),  // 10 attempts per minute
+    analytics: true,
+    prefix: 'ratelimit:auth',
+});
+
+// Rate limit configuration by endpoint pattern
+export const RATE_LIMIT_CONFIG: Record<string, Ratelimit> = {
+    '/api/verify': strictRateLimit,
+    '/api/admin': strictRateLimit,
+    '/api/challenge': normalRateLimit,
+    '/api/mission': normalRateLimit,
+    '/api/user': relaxedRateLimit,
+    '/api/auth': authRateLimit,
 };
 
-export function getRateLimitForPath(path: string): RateLimitConfig {
-    for (const [pattern, config] of Object.entries(RATE_LIMITS)) {
-        if (pattern !== 'default' && path.startsWith(pattern)) {
-            return config;
+// Get the appropriate rate limiter for a path
+export function getRateLimiter(path: string): Ratelimit {
+    for (const [pattern, limiter] of Object.entries(RATE_LIMIT_CONFIG)) {
+        if (path.startsWith(pattern)) {
+            return limiter;
         }
     }
-    return RATE_LIMITS.default;
-}
-
-export interface RateLimitResult {
-    allowed: boolean;
-    remaining: number;
-    resetTime: number;
-}
-
-export function checkRateLimit(identifier: string, path: string): RateLimitResult {
-    const config = getRateLimitForPath(path);
-    const key = `${identifier}:${path.split('/').slice(0, 3).join('/')}`;
-    const now = Date.now();
-
-    const entry = rateLimitStore.get(key);
-
-    if (!entry || entry.resetTime < now) {
-        // New window
-        const newEntry: RateLimitEntry = {
-            count: 1,
-            resetTime: now + config.windowMs,
-        };
-        rateLimitStore.set(key, newEntry);
-
-        return {
-            allowed: true,
-            remaining: config.maxRequests - 1,
-            resetTime: newEntry.resetTime,
-        };
-    }
-
-    if (entry.count >= config.maxRequests) {
-        return {
-            allowed: false,
-            remaining: 0,
-            resetTime: entry.resetTime,
-        };
-    }
-
-    entry.count++;
-    return {
-        allowed: true,
-        remaining: config.maxRequests - entry.count,
-        resetTime: entry.resetTime,
-    };
+    return normalRateLimit; // Default
 }
 
 // Helper to get client IP from request
@@ -98,6 +75,42 @@ export function getClientIP(request: Request): string {
         return realIP;
     }
 
-    // Fallback for development
+    // Vercel specific
+    const vercelIP = request.headers.get('x-vercel-forwarded-for');
+    if (vercelIP) {
+        return vercelIP.split(',')[0].trim();
+    }
+
     return '127.0.0.1';
 }
+
+// Main rate limit check function
+export async function checkRateLimit(
+    request: Request,
+    path: string
+): Promise<{ success: boolean; limit: number; remaining: number; reset: number }> {
+    const ip = getClientIP(request);
+    const limiter = getRateLimiter(path);
+
+    const identifier = `${ip}:${path.split('/').slice(0, 3).join('/')}`;
+    const result = await limiter.limit(identifier);
+
+    return {
+        success: result.success,
+        limit: result.limit,
+        remaining: result.remaining,
+        reset: result.reset,
+    };
+}
+
+// Helper to create rate limit response headers
+export function rateLimitHeaders(result: { limit: number; remaining: number; reset: number }): Headers {
+    const headers = new Headers();
+    headers.set('X-RateLimit-Limit', result.limit.toString());
+    headers.set('X-RateLimit-Remaining', result.remaining.toString());
+    headers.set('X-RateLimit-Reset', result.reset.toString());
+    return headers;
+}
+
+// Export redis client for other uses
+export { redis };

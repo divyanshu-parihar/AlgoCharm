@@ -3,7 +3,7 @@ import { db } from '@/db';
 import { users, exercises, testSessions } from '@/db/schema';
 import { eq, and, gt } from 'drizzle-orm';
 import { createHash, randomUUID } from 'crypto';
-import { checkRateLimit, getClientIP } from '@/lib/rate-limit';
+import { checkRateLimit, rateLimitHeaders } from '@/lib/rate-limit';
 
 // Types
 interface TestCase {
@@ -23,20 +23,15 @@ interface ChallengeResponse {
 // Issues a test session with hidden inputs for the user to solve locally
 export async function GET(request: NextRequest) {
     try {
-        // Rate limiting
-        const clientIP = getClientIP(request);
-        const rateLimit = checkRateLimit(clientIP, '/api/challenge');
+        // Rate limiting with Redis
+        const rateLimit = await checkRateLimit(request, '/api/challenge');
 
-        if (!rateLimit.allowed) {
+        if (!rateLimit.success) {
             return NextResponse.json(
                 { error: 'Rate limit exceeded. Try again later.' },
                 {
                     status: 429,
-                    headers: {
-                        'X-RateLimit-Remaining': '0',
-                        'X-RateLimit-Reset': rateLimit.resetTime.toString(),
-                        'Retry-After': Math.ceil((rateLimit.resetTime - Date.now()) / 1000).toString(),
-                    }
+                    headers: rateLimitHeaders(rateLimit),
                 }
             );
         }

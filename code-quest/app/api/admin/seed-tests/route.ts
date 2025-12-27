@@ -3,20 +3,18 @@ import { db } from '@/db';
 import { exercises } from '@/db/schema';
 import { eq } from 'drizzle-orm';
 import { ALL_EXERCISE_TESTS } from '@/db/test-cases';
-import { checkRateLimit, getClientIP } from '@/lib/rate-limit';
+import { checkRateLimit, rateLimitHeaders } from '@/lib/rate-limit';
 
 // POST /api/admin/seed-tests
 // Seeds all exercises with comprehensive test cases
 export async function POST(request: NextRequest) {
     try {
-        // Rate limiting
-        const clientIP = getClientIP(request);
-        const rateLimit = checkRateLimit(clientIP, '/api/admin');
-
-        if (!rateLimit.allowed) {
+        // Rate limiting with Redis
+        const rateLimit = await checkRateLimit(request, '/api/admin');
+        if (!rateLimit.success) {
             return NextResponse.json(
                 { error: 'Rate limit exceeded' },
-                { status: 429 }
+                { status: 429, headers: rateLimitHeaders(rateLimit) }
             );
         }
 

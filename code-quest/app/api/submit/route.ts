@@ -3,6 +3,7 @@ import { db } from '@/db';
 import { users, exercises, testSessions, userProgress, lessons } from '@/db/schema';
 import { eq, and, gt, sql } from 'drizzle-orm';
 import { createHash } from 'crypto';
+import { checkRateLimit, rateLimitHeaders } from '@/lib/rate-limit';
 
 // Types
 interface SubmitRequest {
@@ -23,6 +24,15 @@ interface SubmitResponse {
 // POST /api/submit - Verify CLI submission with hash
 export async function POST(request: NextRequest) {
     try {
+        // Rate limiting - strict for submit (5/min)
+        const rateLimit = await checkRateLimit(request, '/api/verify');
+        if (!rateLimit.success) {
+            return NextResponse.json(
+                { success: false, message: 'Rate limit exceeded. Try again later.' },
+                { status: 429, headers: rateLimitHeaders(rateLimit) }
+            );
+        }
+
         const body: SubmitRequest = await request.json();
         const { session_id, api_key, outputs, outputs_hash } = body;
 
