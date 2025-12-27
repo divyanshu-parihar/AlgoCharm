@@ -4,6 +4,7 @@
 import { db } from "@/db";
 import { exercises } from "@/db/schema";
 import { eq } from "drizzle-orm";
+import { PROBLEM_DESCRIPTIONS } from "./problem-descriptions";
 
 export interface MissionFiles {
   [filename: string]: string;
@@ -1017,8 +1018,9 @@ function generateGoStarter(id: string, title: string, desc: string, difficulty: 
   const inputType = sig.inputType.go.replace(/^\(|\)$/g, '');
   const outputType = sig.outputType.go;
 
-  // Priority: sig.description > db description (if good) > fallback
-  const problemDesc = sig.description
+  // Priority: PROBLEM_DESCRIPTIONS > sig.description > db description (if good) > fallback
+  const problemDesc = PROBLEM_DESCRIPTIONS[id]
+    || sig.description
     || (cleanDesc.length > 50 ? cleanDesc.split('\n').slice(0, 5).join('\n * ') : null)
     || `Implement ${funcName} to solve the ${title} problem.`;
 
@@ -1108,11 +1110,16 @@ function generateTsStarter(id: string, title: string, desc: string, difficulty: 
   const cleanDesc = desc.replace(/[#*`]/g, '').trim();
   const funcName = sig.functionName.split('/')[0].trim();
 
+  // Priority: PROBLEM_DESCRIPTIONS > sig.description > db description > fallback
+  const problemDesc = PROBLEM_DESCRIPTIONS[id]
+    || sig.description
+    || (cleanDesc.length > 50 ? cleanDesc.split('\n').slice(0, 5).join('\n * ') : `Implement ${funcName} to solve the ${title} problem.`);
+
   return `/**
  * ${title}
  * Difficulty: ${capitalize(difficulty)}
  * 
- * ${cleanDesc.split('\n').slice(0, 5).join('\n * ')}
+ * ${problemDesc}
  * 
  * ${sig.examples.split('\n').join('\n * ')}
  */
@@ -1167,11 +1174,16 @@ function generateCppStarter(id: string, title: string, desc: string, difficulty:
   const cleanDesc = desc.replace(/[#*`]/g, '').trim();
   const funcName = sig.functionName.split('/')[0].trim();
 
+  // Priority: PROBLEM_DESCRIPTIONS > sig.description > db description > fallback
+  const problemDesc = PROBLEM_DESCRIPTIONS[id]
+    || sig.description
+    || (cleanDesc.length > 50 ? cleanDesc.split('\n').slice(0, 5).join('\n * ') : `Implement ${funcName} to solve the ${title} problem.`);
+
   return `/*
  * ${title}
  * Difficulty: ${capitalize(difficulty)}
  * 
- * ${cleanDesc.split('\n').slice(0, 5).join('\n * ')}
+ * ${problemDesc}
  * 
  * ${sig.examples.split('\n').join('\n * ')}
  */

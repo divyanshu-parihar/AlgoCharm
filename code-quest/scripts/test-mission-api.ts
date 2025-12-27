@@ -11,7 +11,8 @@ const PROBLEM_IDS = [
 ];
 
 async function testMissionAPI() {
-    const BASE_URL = process.env.API_URL || 'http://localhost:3000';
+    let API_URL = "https://charm.workbuzz.me";
+    const BASE_URL = API_URL || 'http://localhost:3000';
 
     console.log('Testing Mission API...\n');
     console.log('='.repeat(60));
