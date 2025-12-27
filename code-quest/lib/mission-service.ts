@@ -1019,10 +1019,7 @@ function generateGoStarter(id: string, title: string, desc: string, difficulty: 
   const outputType = sig.outputType.go;
 
   // Priority: PROBLEM_DESCRIPTIONS > sig.description > db description (if good) > fallback
-  const problemDesc = PROBLEM_DESCRIPTIONS[id] as string;
-  if (typeof problemDesc !== 'string') {
-    throw new Error(`Problem description for ${id} is not a string`);
-  }
+  const problemDesc = PROBLEM_DESCRIPTIONS[id];
   return `/*
  * ${title}
  * Difficulty: ${capitalize(difficulty)}
