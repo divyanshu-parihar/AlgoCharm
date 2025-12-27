@@ -37,7 +37,7 @@ export async function GET() {
             .values({
                 clerkId: userId,
                 email: 'unknown@codequest.dev', // Will be updated by webhook or manually
-                username: 'Agent',
+                username: 'N**d',
                 level: 1,
                 xp: 0,
                 apiKey: apiKey,

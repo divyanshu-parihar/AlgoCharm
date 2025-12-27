@@ -1,35 +1,46 @@
+// Package cmd contains all CLI commands for the Charm CLI.
+// This file defines the root command and global configuration.
 package cmd
 
 import (
 	"fmt"
 	"os"
+	"path/filepath"
 
+	"github.com/divyanshu-parihar/AlgoCharm/cli/internal/api"
+	"github.com/divyanshu-parihar/AlgoCharm/cli/internal/ui"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
 
-var cfgFile string
+var (
+	cfgFile   string
+	debug     bool
+	apiClient *api.Client
+)
 
-// rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
-	Use:   "quest",
-	Short: "CodeQuest Field Kit - Your tool for the algorithmic campaign.",
-	Long: `CodeQuest Field Kit v1.0
-	
-This CLI tool is your primary interface for interacting with the CodeQuest platform.
-Use it to download missions, run local tests, and submit your solutions to Headquarters.
+	Use:   "charm",
+	Short: "Charm CLI - Master algorithms through missions",
+	Long: `
+  ╔═══════════════════════════════════════════════════════════╗
+  ║   ▓▓▓ CHARM ▓▓▓   Master Algorithms Through Missions      ║
+  ╚═══════════════════════════════════════════════════════════╝
 
-Start by running: quest login`,
-	// Uncomment the following line if your bare application
-	// has an action associated with it:
-	// Run: func(cmd *cobra.Command, args []string) { },
+  Charm CLI helps you:
+  
+    • Start coding missions with 'charm start <mission>'
+    • Test your solutions locally with 'charm test'
+    • Submit for XP with 'charm submit'
+    
+  Get started by authenticating:
+    charm login <your-api-key>
+`,
+	Version: ui.Version,
 }
 
-// Execute adds all child commands to the root command and sets flags appropriately.
-// This is called by main.main(). It only needs to happen once to the rootCmd.
 func Execute() {
-	err := rootCmd.Execute()
-	if err != nil {
+	if err := rootCmd.Execute(); err != nil {
 		os.Exit(1)
 	}
 }
@@ -37,37 +48,74 @@ func Execute() {
 func init() {
 	cobra.OnInitialize(initConfig)
 
-	// Here you will define your flags and configuration settings.
-	// Cobra supports persistent flags, which, if defined here,
-	// will be global for your application.
+	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default: ~/.codequest.yaml)")
+	rootCmd.PersistentFlags().BoolVar(&debug, "debug", false, "enable debug output")
+	rootCmd.PersistentFlags().String("server", "", "API server URL")
 
-	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.codequest.yaml)")
+	viper.BindPFlag("debug", rootCmd.PersistentFlags().Lookup("debug"))
+	viper.BindPFlag("server_url", rootCmd.PersistentFlags().Lookup("server"))
 
-	// Cobra also supports local flags, which will only run
-	// when this action is called directly.
-	rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	rootCmd.SetVersionTemplate(`{{.Name}} v{{.Version}}
+`)
 }
 
-// initConfig reads in config file and ENV variables if set.
 func initConfig() {
 	if cfgFile != "" {
-		// Use config file from the flag.
 		viper.SetConfigFile(cfgFile)
 	} else {
-		// Find home directory.
 		home, err := os.UserHomeDir()
-		cobra.CheckErr(err)
+		if err != nil {
+			fmt.Fprintln(os.Stderr, "Error finding home directory:", err)
+			os.Exit(1)
+		}
 
-		// Search config in home directory with name ".codequest" (without extension).
 		viper.AddConfigPath(home)
 		viper.SetConfigType("yaml")
 		viper.SetConfigName(".codequest")
 	}
 
-	viper.AutomaticEnv() // read in environment variables that match
+	viper.SetEnvPrefix("CODEQUEST")
+	viper.AutomaticEnv()
+	viper.SetDefault("server_url", "http://localhost:3000")
 
-	// If a config file is found, read it in.
 	if err := viper.ReadInConfig(); err == nil {
-		fmt.Fprintln(os.Stderr, "Using config file:", viper.ConfigFileUsed())
+		if debug {
+			fmt.Fprintln(os.Stderr, "Using config file:", viper.ConfigFileUsed())
+		}
 	}
+
+	initAPIClient()
+}
+
+func initAPIClient() {
+	opts := []api.ClientOption{
+		api.WithBaseURL(viper.GetString("server_url")),
+		api.WithDebug(viper.GetBool("debug")),
+	}
+
+	if apiKey := viper.GetString("api_key"); apiKey != "" {
+		opts = append(opts, api.WithAPIKey(apiKey))
+	}
+
+	apiClient = api.NewClient(opts...)
+}
+
+func requireAPIKey() (string, error) {
+	apiKey := viper.GetString("api_key")
+	if apiKey == "" {
+		return "", fmt.Errorf("not authenticated - run 'quest login <api-key>' first")
+	}
+	return apiKey, nil
+}
+
+func getConfigPath() string {
+	if cfgFile != "" {
+		return cfgFile
+	}
+	home, _ := os.UserHomeDir()
+	return filepath.Join(home, ".codequest.yaml")
+}
+
+func saveConfig() error {
+	return viper.WriteConfigAs(getConfigPath())
 }

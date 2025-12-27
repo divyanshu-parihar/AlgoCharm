@@ -1,6 +1,6 @@
 package main
 
-import "github.com/code-quest/cli/cmd"
+import "github.com/divyanshu-parihar/AlgoCharm/cli/cmd"
 
 func main() {
 	cmd.Execute()

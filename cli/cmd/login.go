@@ -1,116 +1,84 @@
+// Package cmd provides the login command for authentication.
 package cmd
 
 import (
-	"encoding/json"
 	"fmt"
-	"io"
-	"net/http"
-	"os"
-	"path/filepath"
 
+	"github.com/divyanshu-parihar/AlgoCharm/cli/internal/ui"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
 
-// ValidateResponse from the server
-type ValidateResponse struct {
-	Valid    bool   `json:"valid"`
-	Username string `json:"username,omitempty"`
-	Email    string `json:"email,omitempty"`
-	Error    string `json:"error,omitempty"`
-}
-
-// loginCmd represents the login command
 var loginCmd = &cobra.Command{
-	Use:   "login [api_key]",
-	Short: "Authenticate with your API Key",
+	Use:   "login <api-key>",
+	Short: "Authenticate with your CodeQuest API key",
 	Long: `Authenticate the Field Kit with your CodeQuest account.
-You can find your API Key in your profile settings on the website.
+
+You can find your API key in your dashboard at:
+  https://codequest.dev/dashboard
 
 Example:
-  quest login cq_123456789`,
-	Args: cobra.ExactArgs(1), // Requires exactly one argument
-	Run: func(cmd *cobra.Command, args []string) {
-		apiKey := args[0]
-
-		// Basic format validation
-		if len(apiKey) < 8 {
-			fmt.Println("❌ Invalid API key format.")
-			fmt.Println("   API keys should start with 'cq_' and be at least 8 characters.")
-			return
-		}
-
-		// Get server URL
-		serverURL := viper.GetString("server_url")
-		if serverURL == "" {
-			serverURL = "http://localhost:3000"
-		}
-
-		// Validate API key with server
-		fmt.Println("🔐 Validating API key with HQ...")
-
-		resp, err := http.Get(fmt.Sprintf("%s/api/auth/validate?api_key=%s", serverURL, apiKey))
-		if err != nil {
-			fmt.Println("⚠️  Could not reach server:", err)
-			fmt.Println("   Saving key locally. It will be validated on next command.")
-			saveAPIKey(apiKey)
-			return
-		}
-		defer resp.Body.Close()
-
-		body, _ := io.ReadAll(resp.Body)
-
-		// If endpoint doesn't exist (404), save locally
-		if resp.StatusCode == 404 {
-			fmt.Println("⚠️  Validation endpoint not available.")
-			fmt.Println("   Saving key locally. It will be validated on next command.")
-			saveAPIKey(apiKey)
-			return
-		}
-
-		var validateResp ValidateResponse
-		if err := json.Unmarshal(body, &validateResp); err != nil {
-			fmt.Println("⚠️  Invalid server response.")
-			fmt.Println("   Saving key locally. It will be validated on next command.")
-			saveAPIKey(apiKey)
-			return
-		}
-
-		if !validateResp.Valid {
-			fmt.Printf("❌ Invalid API key: %s\n", validateResp.Error)
-			fmt.Println("   Check your API key in the CodeQuest dashboard.")
-			return
-		}
-
-		// Success!
-		saveAPIKey(apiKey)
-		fmt.Println("✅ Authentication successful!")
-		if validateResp.Username != "" {
-			fmt.Printf("   Welcome, %s!\n", validateResp.Username)
-		}
-		fmt.Println("You are now ready to start your first mission.")
-		fmt.Println("Try running: quest start spin-grid")
-	},
-}
-
-func saveAPIKey(apiKey string) {
-	viper.Set("api_key", apiKey)
-
-	home, err := os.UserHomeDir()
-	if err != nil {
-		fmt.Println("Error finding home directory:", err)
-		return
-	}
-	configPath := filepath.Join(home, ".codequest.yaml")
-
-	err = viper.WriteConfigAs(configPath)
-	if err != nil {
-		fmt.Println("Error saving credentials:", err)
-		return
-	}
-	fmt.Printf("Credentials saved to %s\n", configPath)
+  quest login cq_abc123xyz`,
+	Args: cobra.ExactArgs(1),
+	Run:  runLogin,
 }
 
 func init() {
 	rootCmd.AddCommand(loginCmd)
+}
+
+func runLogin(cmd *cobra.Command, args []string) {
+	apiKey := args[0]
+
+	if len(apiKey) < 3 || apiKey[:3] != "cq_" {
+		ui.PrintError("Invalid API key format")
+		fmt.Println("  API keys start with 'cq_' and can be found in your dashboard.")
+		return
+	}
+
+	sp := ui.NewSpinner("Validating API key with HQ", ui.SpinnerDots)
+	sp.Start()
+
+	resp, err := apiClient.ValidateAPIKey(apiKey)
+	if err != nil {
+		sp.Fail(fmt.Sprintf("Connection failed: %v", err))
+		fmt.Println()
+		ui.PrintWarning("Saving key locally - it will be validated on next command.")
+
+		viper.Set("api_key", apiKey)
+		if err := saveConfig(); err != nil {
+			ui.PrintError(fmt.Sprintf("Failed to save config: %v", err))
+		}
+		return
+	}
+
+	if !resp.Valid {
+		sp.Fail("Invalid API key")
+		fmt.Println()
+		ui.PrintError(resp.Error)
+		fmt.Println("  Check your API key in the CodeQuest dashboard.")
+		return
+	}
+
+	viper.Set("api_key", apiKey)
+	if err := saveConfig(); err != nil {
+		sp.Fail("Failed to save credentials")
+		ui.PrintError(err.Error())
+		return
+	}
+
+	sp.Success("Authentication successful")
+	fmt.Println()
+
+	if resp.Username != "" {
+		ui.Accent.Printf("  Welcome back, %s!\n", resp.Username)
+	} else {
+		ui.Accent.Println("  Welcome, Agent!")
+	}
+
+	fmt.Println()
+	fmt.Println("  Your credentials are saved. You're ready to start!")
+	fmt.Println()
+	ui.PrintStep(1, "Start a mission: "+ui.Cyan.Sprint("quest start <mission-id>"))
+	fmt.Println()
 }

@@ -1,156 +1,154 @@
+// Package cmd provides the submit command for submitting verified results.
 package cmd
 
 import (
-	"bufio"
-	"bytes"
 	"encoding/json"
 	"fmt"
-	"io"
-	"net/http"
 	"os"
 	"path/filepath"
-	"strings"
 	"time"
 
+	"github.com/divyanshu-parihar/AlgoCharm/cli/internal/api"
+	"github.com/divyanshu-parihar/AlgoCharm/cli/internal/ui"
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
 )
 
-// SubmitRequest is the payload sent to the server
-type SubmitRequest struct {
-	SessionID   string                   `json:"session_id"`
-	APIKey      string                   `json:"api_key"`
-	Outputs     []map[string]interface{} `json:"outputs"`
-	OutputsHash string                   `json:"outputs_hash"`
-}
-
-// SubmitResponse is the server's response
-type SubmitResponse struct {
-	Success   bool   `json:"success"`
-	Message   string `json:"message"`
-	XPAwarded int    `json:"xp_awarded"`
-	Passed    int    `json:"passed"`
-	Total     int    `json:"total"`
-}
-
-// submitCmd represents the submit command
 var submitCmd = &cobra.Command{
 	Use:   "submit",
-	Short: "Submit your verified solution to HQ",
-	Long: `Submit your test results to the server for verification.
-You must run 'quest test' first to generate a session.
+	Short: "Submit your solution for verification",
+	Long: `Submit your test results for server-side verification.
+
+This command sends your output hash to the server, which verifies
+it matches the expected results. If successful, you earn XP!
+
+You must run 'quest test' first to generate a valid session.
 
 Example:
-  cd spin-grid
-  quest test    # Run tests first
-  quest submit  # Submit results`,
-	Run: func(cmd *cobra.Command, args []string) {
-		// 1. Check if logged in
-		apiKey := viper.GetString("api_key")
-		if apiKey == "" {
-			fmt.Println("❌ You are not logged in.")
-			fmt.Println("   Run 'quest login <api_key>' first.")
-			return
-		}
-
-		// 2. Load session from ~/.codequest-session.json
-		home, _ := os.UserHomeDir()
-		sessionPath := filepath.Join(home, ".codequest-session.json")
-
-		sessionData, err := os.ReadFile(sessionPath)
-		if err != nil {
-			fmt.Println("❌ No test session found.")
-			fmt.Println("   Run 'quest test' first to generate a session.")
-			return
-		}
-
-		var session SessionData
-		if err := json.Unmarshal(sessionData, &session); err != nil {
-			fmt.Println("❌ Invalid session file.")
-			fmt.Println("   Run 'quest test' again to generate a new session.")
-			return
-		}
-
-		// 3. Check if session is expired
-		expiresAt, _ := time.Parse(time.RFC3339, session.ExpiresAt)
-		if time.Now().After(expiresAt) {
-			fmt.Println("❌ Session has expired.")
-			fmt.Println("   Run 'quest test' again to generate a new session.")
-			os.Remove(sessionPath)
-			return
-		}
-
-		fmt.Printf("📡 Submitting mission: %s\n", session.MissionID)
-		fmt.Printf("   Session: %s...\n\n", session.SessionID[:8])
-
-		// 4. Ask for confirmation
-		fmt.Print("✅ Submit this solution? (y/n): ")
-		reader := bufio.NewReader(os.Stdin)
-		response, _ := reader.ReadString('\n')
-		response = strings.TrimSpace(strings.ToLower(response))
-
-		if response != "y" && response != "yes" {
-			fmt.Println("Submission cancelled.")
-			return
-		}
-
-		// 5. Send to server
-		fmt.Println("\n📡 Sending verified results to HQ...")
-
-		submitReq := SubmitRequest{
-			SessionID:   session.SessionID,
-			APIKey:      apiKey,
-			Outputs:     session.Outputs,
-			OutputsHash: session.OutputHash,
-		}
-
-		jsonData, _ := json.Marshal(submitReq)
-
-		serverURL := viper.GetString("server_url")
-		if serverURL == "" {
-			serverURL = "http://localhost:3000"
-		}
-
-		resp, err := http.Post(
-			serverURL+"/api/submit",
-			"application/json",
-			bytes.NewBuffer(jsonData),
-		)
-
-		if err != nil {
-			fmt.Println("⚠️  Could not reach server:", err)
-			fmt.Println("   Try again later when you have an internet connection.")
-			return
-		}
-		defer resp.Body.Close()
-
-		body, _ := io.ReadAll(resp.Body)
-
-		var submitResp SubmitResponse
-		if err := json.Unmarshal(body, &submitResp); err != nil {
-			fmt.Println("⚠️  Invalid server response")
-			fmt.Println("   Raw:", string(body))
-			return
-		}
-
-		if submitResp.Success {
-			fmt.Println("\n🎉 MISSION COMPLETE!")
-			fmt.Printf("   +%d XP Earned!\n", submitResp.XPAwarded)
-			fmt.Printf("   Tests passed: %d/%d\n", submitResp.Passed, submitResp.Total)
-			fmt.Println("\n💡 Tip: Check your campaign map for the next mission!")
-
-			// Clean up session file
-			os.Remove(sessionPath)
-		} else {
-			fmt.Printf("❌ Submission failed: %s\n", submitResp.Message)
-			if submitResp.Total > 0 {
-				fmt.Printf("   Tests passed: %d/%d\n", submitResp.Passed, submitResp.Total)
-			}
-			fmt.Println("\n💡 Tip: Run 'quest test' again to retry.")
-		}
-	},
+  cd two-sum
+  quest test
+  quest submit`,
+	Run: runSubmit,
 }
 
 func init() {
 	rootCmd.AddCommand(submitCmd)
+}
+
+func runSubmit(cmd *cobra.Command, args []string) {
+	cwd, err := os.Getwd()
+	if err != nil {
+		ui.PrintError(fmt.Sprintf("Failed to get current directory: %v", err))
+		return
+	}
+
+	apiKey, err := requireAPIKey()
+	if err != nil {
+		ui.PrintError(err.Error())
+		return
+	}
+
+	// Try hidden .codequest folder first, then fallback to root
+	sessionPath := filepath.Join(cwd, ".codequest", "session.json")
+	if _, err := os.Stat(sessionPath); os.IsNotExist(err) {
+		sessionPath = filepath.Join(cwd, ".session.json")
+	}
+
+	sessionData, err := os.ReadFile(sessionPath)
+	if err != nil {
+		ui.PrintError("No test session found")
+		fmt.Println("  Run 'quest test' first to generate a session.")
+		return
+	}
+
+	var session api.LocalSession
+	if err := json.Unmarshal(sessionData, &session); err != nil {
+		ui.PrintError("Invalid session file - run 'quest test' again")
+		return
+	}
+
+	ui.PrintMiniBanner()
+	ui.PrintHeader("SUBMITTING: " + session.MissionID)
+	fmt.Println()
+
+	if session.IsExpired() {
+		ui.PrintError("Session expired!")
+		fmt.Println()
+		fmt.Printf("  Session was valid until: %s\n", session.ExpiresAt.Format(time.RFC822))
+		fmt.Printf("  Current time:            %s\n", time.Now().Format(time.RFC822))
+		fmt.Println()
+		fmt.Println("  Run 'quest test' to get a new session.")
+		return
+	}
+
+	remaining := time.Until(session.ExpiresAt)
+	if remaining < 5*time.Minute {
+		ui.PrintWarning(fmt.Sprintf("Session expires in %s!", formatDuration(remaining)))
+	} else {
+		ui.Gray.Printf("  Session valid for: %s\n", formatDuration(remaining))
+	}
+	fmt.Println()
+
+	sp := ui.NewSpinner("Transmitting results to HQ", ui.SpinnerDots)
+	sp.Start()
+
+	req := &api.SubmitRequest{
+		SessionID:   session.SessionID,
+		APIKey:      apiKey,
+		Outputs:     session.Outputs,
+		OutputsHash: session.OutputHash,
+	}
+
+	resp, err := apiClient.Submit(req)
+	if err != nil {
+		sp.Fail(err.Error())
+		return
+	}
+
+	if !resp.Success {
+		sp.Fail("Verification failed")
+		fmt.Println()
+		ui.PrintError(resp.Message)
+		fmt.Println()
+		fmt.Println("  Your outputs don't match the expected results.")
+		fmt.Println("  Check your solution and run 'quest test' again.")
+		return
+	}
+
+	sp.Success("Verification successful!")
+	fmt.Println()
+
+	showXPAnimation(resp.XPAwarded, resp.NewTotal)
+
+	os.Remove(sessionPath)
+
+	fmt.Println()
+	ui.PrintSuccess("Mission complete!")
+	fmt.Println()
+	fmt.Println("  Continue your journey:", ui.Cyan.Sprint("quest list"))
+	fmt.Println()
+}
+
+func showXPAnimation(xpAwarded, newTotal int) {
+	fmt.Println()
+
+	ui.Accent.Println("  ╔═══════════════════════════════════╗")
+	ui.Accent.Printf("  ║     ")
+	ui.Success.Printf("⚡ +%d XP EARNED! ⚡", xpAwarded)
+	padding := 22 - len(fmt.Sprintf("%d", xpAwarded))
+	fmt.Printf("%*s║\n", padding, "")
+	ui.Accent.Println("  ╚═══════════════════════════════════╝")
+	fmt.Println()
+
+	if newTotal > 0 {
+		ui.Gray.Printf("  Total XP: %s\n", ui.Accent.Sprintf("%d", newTotal))
+	}
+}
+
+func formatDuration(d time.Duration) string {
+	if d < time.Minute {
+		return fmt.Sprintf("%.0f seconds", d.Seconds())
+	} else if d < time.Hour {
+		return fmt.Sprintf("%.0f minutes", d.Minutes())
+	}
+	return fmt.Sprintf("%.1f hours", d.Hours())
 }

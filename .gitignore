@@ -1,3 +1,29 @@
-venv
-testing
-node_modules
+# Dependencies
+node_modules/
+venv/
+
+# Build outputs
+cli/quest
+cli/charm
+*.exe
+
+# Testing directories (user-generated)
+testing/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Local environment
+.env.local
+.env*.local
+
+# Next.js
+.next/
+out/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
