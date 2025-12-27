@@ -1,25 +1,64 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useUser } from "@clerk/nextjs";
-import { Copy, Check, Terminal, User, Zap, Target, ArrowLeft } from "lucide-react";
+import { Copy, Check, Terminal, User, Zap, Target, ArrowLeft, RefreshCw } from "lucide-react";
 import Link from "next/link";
 
-function generateApiKey(userId: string): string {
-    // Simple deterministic key generation based on userId
-    // In production, this should be stored in DB and regeneratable
-    const hash = userId.split('').reduce((acc, char) => {
-        return ((acc << 5) - acc + char.charCodeAt(0)) | 0;
-    }, 0);
-    return `cq_${Math.abs(hash).toString(36)}${Date.now().toString(36).slice(-4)}`;
+interface UserProfile {
+    id: number;
+    username: string;
+    email: string;
+    level: number;
+    xp: number;
+    apiKey: string;
 }
 
 export default function DashboardPage() {
     const { user, isLoaded } = useUser();
     const [copied, setCopied] = useState(false);
     const [copiedKey, setCopiedKey] = useState(false);
+    const [profile, setProfile] = useState<UserProfile | null>(null);
+    const [loading, setLoading] = useState(true);
+    const [regenerating, setRegenerating] = useState(false);
 
-    if (!isLoaded) {
+    // Fetch user profile from our database
+    useEffect(() => {
+        if (user) {
+            fetchProfile();
+        }
+    }, [user]);
+
+    const fetchProfile = async () => {
+        try {
+            const res = await fetch('/api/user/profile');
+            if (res.ok) {
+                const data = await res.json();
+                setProfile(data);
+            }
+        } catch (error) {
+            console.error('Failed to fetch profile:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const regenerateApiKey = async () => {
+        setRegenerating(true);
+        try {
+            const res = await fetch('/api/user/profile', { method: 'POST' });
+            if (res.ok) {
+                const data = await res.json();
+                setProfile(prev => prev ? { ...prev, apiKey: data.apiKey } : null);
+            }
+        } catch (error) {
+            console.error('Failed to regenerate API key:', error);
+        } finally {
+            setRegenerating(false);
+        }
+    };
+
+    if (!isLoaded || loading) {
         return (
             <div className="min-h-screen bg-[#0B0B0B] flex items-center justify-center">
                 <div className="text-accent-primary animate-pulse">Loading...</div>
@@ -38,7 +77,7 @@ export default function DashboardPage() {
         );
     }
 
-    const apiKey = generateApiKey(user.id);
+    const apiKey = profile?.apiKey || 'Loading...';
     const loginCommand = `quest login ${apiKey}`;
 
     const copyToClipboard = (text: string, isKey: boolean) => {
@@ -91,7 +130,7 @@ export default function DashboardPage() {
                             <div className="text-center">
                                 <div className="flex items-center justify-center gap-1 text-accent-primary">
                                     <Zap className="w-4 h-4" />
-                                    <span className="text-2xl font-bold">0</span>
+                                    <span className="text-2xl font-bold">{profile?.xp || 0}</span>
                                 </div>
                                 <p className="text-xs text-gray-500 mt-1">XP EARNED</p>
                             </div>
@@ -104,7 +143,7 @@ export default function DashboardPage() {
                             </div>
                             <div className="text-center">
                                 <div className="flex items-center justify-center gap-1 text-purple-400">
-                                    <span className="text-2xl font-bold">1</span>
+                                    <span className="text-2xl font-bold">{profile?.level || 1}</span>
                                 </div>
                                 <p className="text-xs text-gray-500 mt-1">LEVEL</p>
                             </div>
@@ -125,13 +164,24 @@ export default function DashboardPage() {
 
                         {/* API Key */}
                         <div className="space-y-2">
-                            <label className="text-xs text-gray-500 uppercase tracking-widest">Your API Key</label>
+                            <div className="flex items-center justify-between">
+                                <label className="text-xs text-gray-500 uppercase tracking-widest">Your API Key</label>
+                                <button
+                                    onClick={regenerateApiKey}
+                                    disabled={regenerating}
+                                    className="text-xs text-gray-500 hover:text-accent-primary transition-colors flex items-center gap-1 disabled:opacity-50"
+                                >
+                                    <RefreshCw className={`w-3 h-3 ${regenerating ? 'animate-spin' : ''}`} />
+                                    Regenerate
+                                </button>
+                            </div>
                             <div className="relative">
                                 <div className="bg-black border border-white/20 rounded-lg p-4 font-mono text-sm flex items-center justify-between">
                                     <code className="text-accent-secondary">{apiKey}</code>
                                     <button
                                         onClick={() => copyToClipboard(apiKey, true)}
                                         className="text-gray-500 hover:text-white transition-colors"
+                                        disabled={!profile?.apiKey}
                                     >
                                         {copiedKey ? <Check className="w-4 h-4 text-green-400" /> : <Copy className="w-4 h-4" />}
                                     </button>
@@ -151,6 +201,7 @@ export default function DashboardPage() {
                                     <button
                                         onClick={() => copyToClipboard(loginCommand, false)}
                                         className="text-gray-500 hover:text-white transition-colors"
+                                        disabled={!profile?.apiKey}
                                     >
                                         {copied ? <Check className="w-4 h-4 text-green-400" /> : <Copy className="w-4 h-4" />}
                                     </button>
