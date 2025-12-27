@@ -1016,7 +1016,7 @@ function generateGoStarter(id: string, title: string, desc: string, difficulty: 
   const outputType = sig.outputType.go;
 
   // Use examples as primary description if db description is empty/short
-  const hasGoodDesc = cleanDesc.length > 30;
+  const hasGoodDesc = cleanDesc.length > 50;
   const problemDesc = hasGoodDesc
     ? cleanDesc.split('\n').slice(0, 5).join('\n * ')
     : `Implement ${funcName} to solve the ${title} problem.`;
