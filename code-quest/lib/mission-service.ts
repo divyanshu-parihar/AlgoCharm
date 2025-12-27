@@ -1168,8 +1168,6 @@ function generateCppStarter(id: string, title: string, desc: string, difficulty:
 
   // Priority: PROBLEM_DESCRIPTIONS > sig.description > db description > fallback
   const problemDesc = PROBLEM_DESCRIPTIONS[id]
-    || sig.description
-    || (cleanDesc.length > 50 ? cleanDesc.split('\n').slice(0, 5).join('\n * ') : `Implement ${funcName} to solve the ${title} problem.`);
 
   return `/*
  * ${title}
