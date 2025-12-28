@@ -50,11 +50,11 @@ export default function Home() {
               System Online v2.5
             </div>
             <h1 className="text-5xl md:text-7xl font-bold text-text-header leading-[0.9] tracking-tight">
-              MASTER DSA.<br />
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-text-header to-text-body">THE GAME.</span>
+              CRACK THE<br />
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-accent-primary to-accent-secondary">CODE.</span>
             </h1>
             <p className="text-text-body text-lg md:text-xl max-w-md border-l-2 border-accent-primary pl-4">
-              Stop grinding LeetCode. Start your campaign. Level up your algorithmic thinking in a brutalist open world.
+              Forget boring tutorials. Learn DSA like a game. Beat challenges, level up, flex your skills.
             </p>
             <a href="/campaign" className="group relative inline-block px-8 py-4 bg-accent-primary text-white font-bold tracking-wider hover:bg-white hover:text-bg-main transition-all duration-300">
               <span className="absolute inset-0 border-2 border-white translate-x-1 translate-y-1 group-hover:translate-x-0 group-hover:translate-y-0 transition-transform" />
