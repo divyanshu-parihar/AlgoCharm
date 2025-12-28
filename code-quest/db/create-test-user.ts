@@ -12,7 +12,7 @@ async function createTestUser() {
 
     const testUser = {
         clerkId: 'test_clerk_id_123',
-        email: 'test@codequest.dev',
+        email: 'divyanshu1447@gmail.com',
         username: 'TestAgent',
         level: 1,
         xp: 0,

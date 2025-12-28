@@ -36,7 +36,7 @@ export async function GET() {
             .insert(users)
             .values({
                 clerkId: userId,
-                email: 'unknown@algocharm.dev', // Will be updated by webhook or manually
+                email: 'divyanshu1447@gmail.com', // Will be updated by webhook or manually
                 username: 'N**d',
                 level: 1,
                 xp: 0,
