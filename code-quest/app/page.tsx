@@ -384,11 +384,12 @@ export default function Home() {
         <div className="container mx-auto px-4">
           <div className="flex flex-col md:flex-row justify-between items-center gap-4">
             <div className="text-xs text-gray-600">
-              © 2025 ALGOCHARM. ALL RIGHTS RESERVED.
+              © 2025 ALGOCHARM (operated by WorkBuzz). ALL RIGHTS RESERVED.
             </div>
             <div className="flex gap-6 text-xs">
               <a href="/terms" className="text-gray-500 hover:text-accent-primary transition-colors">Terms of Service</a>
               <a href="/privacy" className="text-gray-500 hover:text-accent-secondary transition-colors">Privacy Policy</a>
+              <a href="/refund" className="text-gray-500 hover:text-red-400 transition-colors">Refund Policy</a>
               <a href="/pricing" className="text-gray-500 hover:text-white transition-colors">Pricing</a>
             </div>
           </div>

@@ -34,16 +34,21 @@ export default function TermsOfServicePage() {
                     <div className="prose prose-invert max-w-none space-y-8">
                         <section className="tech-border bg-bg-secondary p-6">
                             <h2 className="text-xl font-bold text-text-header mb-4">1. Acceptance of Terms</h2>
-                            <p className="text-text-body text-sm leading-relaxed">
-                                By accessing or using AlgoCharm ("the Platform"), you agree to be bound by these Terms of Service.
+                            <p className="text-text-body text-sm leading-relaxed mb-4">
+                                By accessing or using AlgoCharm ("the Platform"), operated by <strong className="text-text-header">WorkBuzz</strong>,
+                                you agree to be bound by these Terms of Service.
                                 If you do not agree to these terms, please do not use the Platform.
+                            </p>
+                            <p className="text-text-body text-sm leading-relaxed">
+                                <strong className="text-text-header">Legal Business Name:</strong> WorkBuzz<br />
+                                <strong className="text-text-header">Platform Name:</strong> AlgoCharm
                             </p>
                         </section>
 
                         <section className="tech-border bg-bg-secondary p-6">
                             <h2 className="text-xl font-bold text-text-header mb-4">2. Description of Service</h2>
                             <p className="text-text-body text-sm leading-relaxed">
-                                AlgoCharm is a gamified algorithm learning platform that provides coding challenges,
+                                AlgoCharm, operated by WorkBuzz, is a gamified algorithm learning platform that provides coding challenges,
                                 educational content, and a CLI tool for practicing data structures and algorithms.
                                 The service is provided on a subscription basis.
                             </p>
@@ -69,14 +74,17 @@ export default function TermsOfServicePage() {
                                 </p>
                             </div>
                             <p className="text-text-body text-sm leading-relaxed mb-4">
-                                <strong className="text-text-header">All payments are final and non-refundable.</strong> Once a payment is made,
+                                <strong className="text-text-header">All payments made to AlgoCharm (operated by WorkBuzz) are final and non-refundable.</strong> Once a payment is made,
                                 no refunds will be issued under any circumstances, with the following sole exception:
                             </p>
-                            <p className="text-text-body text-sm leading-relaxed">
+                            <p className="text-text-body text-sm leading-relaxed mb-4">
                                 <strong className="text-text-header">Exception:</strong> Refunds may be considered only in cases of serious
                                 or genuine billing mistakes (such as duplicate charges or technical payment errors) that are
-                                verified and approved at the sole discretion of the website owner. To request a review,
+                                verified and approved at the sole discretion of the owner of WorkBuzz. To request a review,
                                 contact us with proof of the error within 7 days of the transaction.
+                            </p>
+                            <p className="text-text-body text-sm">
+                                For full details, see our <a href="/refund" className="text-accent-primary hover:underline">Refund Policy</a>.
                             </p>
                         </section>
 
@@ -98,7 +106,7 @@ export default function TermsOfServicePage() {
                             <h2 className="text-xl font-bold text-text-header mb-4">6. Intellectual Property</h2>
                             <p className="text-text-body text-sm leading-relaxed">
                                 All content on the Platform, including but not limited to problems, solutions, educational materials,
-                                and the CLI tool, is the intellectual property of AlgoCharm and is protected by copyright laws.
+                                and the CLI tool, is the intellectual property of WorkBuzz (operating as AlgoCharm) and is protected by copyright laws.
                                 You may not copy, distribute, or create derivative works without express permission.
                             </p>
                         </section>
@@ -149,7 +157,7 @@ export default function TermsOfServicePage() {
 
             <footer className="border-t border-border-brutal py-8 bg-bg-secondary">
                 <div className="container mx-auto px-4 text-center text-xs text-gray-600">
-                    © 2025 ALGOCHARM. ALL RIGHTS RESERVED.
+                    © 2025 ALGOCHARM (operated by WorkBuzz). ALL RIGHTS RESERVED.
                 </div>
             </footer>
         </div>
