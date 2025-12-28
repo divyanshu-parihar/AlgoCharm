@@ -980,6 +980,117 @@ const DEFAULT_SIGNATURE = {
   examples: ""
 };
 
+// Helper type definitions for problems that need them
+type HelperType = 'TreeNode' | 'ListNode' | 'Node';
+
+// Problems that require TreeNode helper struct
+const TREE_PROBLEMS = new Set([
+  'mirror-tree', 'tree-depth', 'tree-width', 'tree-balance', 'twin-trees',
+  'tree-in-tree', 'common-parent', 'level-scan', 'right-view', 'good-nodes',
+  'valid-bst', 'kth-smallest', 'build-tree', 'max-path', 'pack-tree'
+]);
+
+// Problems that require ListNode helper struct
+const LIST_PROBLEMS = new Set([
+  'flip-list', 'merge-pair', 'loop-check', 'rearrange-list', 'trim-end',
+  'clone-random', 'add-lists', 'find-clone', 'merge-many', 'group-flip'
+]);
+
+// Problems that require Node helper struct (for graphs)
+const GRAPH_NODE_PROBLEMS = new Set(['copy-network']);
+
+// Get required helper types for a problem
+function getRequiredHelpers(problemId: string): HelperType[] {
+  const helpers: HelperType[] = [];
+  if (TREE_PROBLEMS.has(problemId)) helpers.push('TreeNode');
+  if (LIST_PROBLEMS.has(problemId)) helpers.push('ListNode');
+  if (GRAPH_NODE_PROBLEMS.has(problemId)) helpers.push('Node');
+  return helpers;
+}
+
+// Helper struct definitions for Go
+const GO_HELPERS: Record<HelperType, string> = {
+  TreeNode: `// TreeNode represents a node in a binary tree
+type TreeNode struct {
+	Val   int
+	Left  *TreeNode
+	Right *TreeNode
+}`,
+  ListNode: `// ListNode represents a node in a singly linked list
+type ListNode struct {
+	Val  int
+	Next *ListNode
+}`,
+  Node: `// Node represents a node in an undirected graph
+type Node struct {
+	Val       int
+	Neighbors []*Node
+}`
+};
+
+// Helper struct definitions for TypeScript
+const TS_HELPERS: Record<HelperType, string> = {
+  TreeNode: `// TreeNode represents a node in a binary tree
+class TreeNode {
+  val: number;
+  left: TreeNode | null;
+  right: TreeNode | null;
+  constructor(val?: number, left?: TreeNode | null, right?: TreeNode | null) {
+    this.val = val === undefined ? 0 : val;
+    this.left = left === undefined ? null : left;
+    this.right = right === undefined ? null : right;
+  }
+}`,
+  ListNode: `// ListNode represents a node in a singly linked list
+class ListNode {
+  val: number;
+  next: ListNode | null;
+  constructor(val?: number, next?: ListNode | null) {
+    this.val = val === undefined ? 0 : val;
+    this.next = next === undefined ? null : next;
+  }
+}`,
+  Node: `// Node represents a node in an undirected graph
+class Node {
+  val: number;
+  neighbors: Node[];
+  constructor(val?: number, neighbors?: Node[]) {
+    this.val = val === undefined ? 0 : val;
+    this.neighbors = neighbors === undefined ? [] : neighbors;
+  }
+}`
+};
+
+// Helper struct definitions for C++
+const CPP_HELPERS: Record<HelperType, string> = {
+  TreeNode: `// Definition for a binary tree node
+struct TreeNode {
+    int val;
+    TreeNode *left;
+    TreeNode *right;
+    TreeNode() : val(0), left(nullptr), right(nullptr) {}
+    TreeNode(int x) : val(x), left(nullptr), right(nullptr) {}
+    TreeNode(int x, TreeNode *left, TreeNode *right) : val(x), left(left), right(right) {}
+};`,
+  ListNode: `// Definition for singly-linked list
+struct ListNode {
+    int val;
+    ListNode *next;
+    ListNode() : val(0), next(nullptr) {}
+    ListNode(int x) : val(x), next(nullptr) {}
+    ListNode(int x, ListNode *next) : val(x), next(next) {}
+};`,
+  Node: `// Definition for a Node in an undirected graph
+class Node {
+public:
+    int val;
+    vector<Node*> neighbors;
+    Node() : val(0), neighbors(vector<Node*>()) {}
+    Node(int _val) : val(_val), neighbors(vector<Node*>()) {}
+    Node(int _val, vector<Node*> _neighbors) : val(_val), neighbors(_neighbors) {}
+};`
+};
+
 export const MissionService = {
   async getMissionById(missionId: string): Promise<Mission | null> {
     const result = await db.select().from(exercises).where(eq(exercises.id, missionId));
@@ -1013,10 +1124,13 @@ export const MissionService = {
 
 // Generate Go starter code
 function generateGoStarter(id: string, title: string, desc: string, difficulty: string, sig: typeof DEFAULT_SIGNATURE): string {
-  const cleanDesc = desc.replace(/[#*`]/g, '').trim();
   const funcName = capitalize(sig.functionName.split('/')[0].trim());
   const inputType = sig.inputType.go.replace(/^\(|\)$/g, '');
   const outputType = sig.outputType.go;
+
+  // Get helper structs needed for this problem
+  const helpers = getRequiredHelpers(id);
+  const helperCode = helpers.map(h => GO_HELPERS[h]).join('\n\n');
 
   // Priority: PROBLEM_DESCRIPTIONS > sig.description > db description (if good) > fallback
   const problemDesc = PROBLEM_DESCRIPTIONS[id];
@@ -1035,7 +1149,7 @@ function generateGoStarter(id: string, title: string, desc: string, difficulty: 
 
 package main
 
-// ${funcName} solves the problem
+${helperCode ? helperCode + '\n\n' : ''}// ${funcName} solves the problem
 // Input: ${sig.inputType.go}
 // Output: ${sig.outputType.go}
 func ${funcName}(${inputType.includes(',') ? inputType : 'nums ' + inputType}) ${outputType} {
@@ -1105,6 +1219,10 @@ function getGoFunctionCall(inputType: string): string {
 function generateTsStarter(id: string, title: string, desc: string, difficulty: string, sig: typeof DEFAULT_SIGNATURE): string {
   const funcName = sig.functionName.split('/')[0].trim();
 
+  // Get helper classes needed for this problem
+  const helpers = getRequiredHelpers(id);
+  const helperCode = helpers.map(h => TS_HELPERS[h]).join('\n\n');
+
   // Priority: PROBLEM_DESCRIPTIONS > sig.description > db description > fallback
   const problemDesc = PROBLEM_DESCRIPTIONS[id]
   return `/**
@@ -1116,7 +1234,7 @@ function generateTsStarter(id: string, title: string, desc: string, difficulty: 
  * ${sig.examples.split('\n').join('\n * ')}
  */
 
-/**
+${helperCode ? helperCode + '\n\n' : ''}/**
  * @param ${sig.inputType.ts}
  * @returns ${sig.outputType.ts}
  */
@@ -1163,8 +1281,11 @@ function getTsFunctionCall(inputType: string): string {
 
 // Generate C++ starter code
 function generateCppStarter(id: string, title: string, desc: string, difficulty: string, sig: typeof DEFAULT_SIGNATURE): string {
-  const cleanDesc = desc.replace(/[#*`]/g, '').trim();
   const funcName = sig.functionName.split('/')[0].trim();
+
+  // Get helper structs needed for this problem
+  const helpers = getRequiredHelpers(id);
+  const helperCode = helpers.map(h => CPP_HELPERS[h]).join('\n\n');
 
   // Priority: PROBLEM_DESCRIPTIONS > sig.description > db description > fallback
   const problemDesc = PROBLEM_DESCRIPTIONS[id]
@@ -1188,7 +1309,7 @@ function generateCppStarter(id: string, title: string, desc: string, difficulty:
 using json = nlohmann::json;
 using namespace std;
 
-class Solution {
+${helperCode ? helperCode + '\n\n' : ''}class Solution {
 public:
     /**
      * @param ${sig.inputType.cpp}

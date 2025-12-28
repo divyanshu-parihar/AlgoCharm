@@ -8,6 +8,14 @@ const PROBLEM_IDS = [
     'letter-shuffle',
     'triple-match',
     'step-climb',
+    // Tree problems (should include TreeNode)
+    'mirror-tree',
+    'tree-depth',
+    // List problems (should include ListNode)
+    'flip-list',
+    'merge-pair',
+    // Graph problems (should include Node)
+    'copy-network',
 ];
 
 async function testMissionAPI() {

@@ -1,10 +1,7 @@
 // Problem descriptions for all 150+ problems
 // These are LeetCode-style descriptions for each algorithm challenge
 
-interface Record {
-    [key: string]: string;
-}
-export const PROBLEM_DESCRIPTIONS: Record = {
+export const PROBLEM_DESCRIPTIONS: Record<string, string> = {
     // DATA VAULT (Arrays & Hashing) - 9 problems
     "spot-repeat": "Given an integer array nums, return true if any value appears at least twice in the array, and return false if every element is distinct.",
     "letter-shuffle": "Given two strings s and t, return true if t is an anagram of s, and false otherwise. An anagram uses all original letters exactly once.",
