@@ -10,7 +10,7 @@ export default function Home() {
         <div className="container mx-auto px-4 h-16 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Terminal className="w-6 h-6 text-accent-primary" />
-            <span className="text-xl font-bold tracking-tighter text-text-header">CODEQUEST</span>
+            <span className="text-xl font-bold tracking-tighter text-text-header">ALGOCHARM</span>
           </div>
 
           <nav className="hidden md:flex items-center gap-8 text-sm font-medium text-text-body">
@@ -384,7 +384,7 @@ export default function Home() {
         <div className="container mx-auto px-4">
           <div className="flex flex-col md:flex-row justify-between items-center gap-4">
             <div className="text-xs text-gray-600">
-              © 2025 CODEQUEST. SYSTEM ALL RIGHTS RESERVED.
+              © 2025 ALGOCHARM. ALL RIGHTS RESERVED.
             </div>
             <div className="flex gap-6 text-xs">
               <a href="/terms" className="text-gray-500 hover:text-accent-primary transition-colors">Terms of Service</a>

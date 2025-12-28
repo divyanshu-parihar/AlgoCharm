@@ -1,6 +1,8 @@
 // Problem descriptions for all 150+ problems
-// These are LeetCode-style descriptions for each algorithm challenge
-
+// These are LeetCode-style descriptions for each algorithm challenget
+interface Record<T, U> {
+    [key: T]: U;
+}
 export const PROBLEM_DESCRIPTIONS: Record<string, string> = {
     // DATA VAULT (Arrays & Hashing) - 9 problems
     "spot-repeat": "Given an integer array nums, return true if any value appears at least twice in the array, and return false if every element is distinct.",

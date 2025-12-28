@@ -4,15 +4,21 @@ import { Map, Play, Circle, CheckCircle2 } from "lucide-react";
 import Link from "next/link";
 import { eq, sql, and } from "drizzle-orm";
 import { auth, currentUser } from "@clerk/nextjs/server";
+import { redirect } from "next/navigation";
 
 // Force dynamic rendering - this page queries the database
 export const dynamic = 'force-dynamic';
 
 export default async function CampaignPage() {
-  const allModules = await db.select().from(modules).orderBy(modules.order);
-
-  // Get the current user from Clerk
+  // Get the current user from Clerk - require authentication
   const { userId: clerkId } = await auth();
+
+  // Redirect to home if not authenticated
+  if (!clerkId) {
+    redirect('/');
+  }
+
+  const allModules = await db.select().from(modules).orderBy(modules.order);
 
   // Get lesson counts for each module
   const lessonCounts = await db.select({
@@ -27,31 +33,29 @@ export default async function CampaignPage() {
     countMap[l.moduleId] = l.count;
   });
 
-  // Get user progress if logged in
+  // Get user progress
   let progressMap: Record<number, number> = {};
 
-  if (clerkId) {
-    // Find user in our DB
-    const dbUser = await db.select().from(users).where(eq(users.clerkId, clerkId)).limit(1);
+  // Find user in our DB
+  const dbUser = await db.select().from(users).where(eq(users.clerkId, clerkId)).limit(1);
 
-    if (dbUser.length > 0) {
-      // Get completed lessons per module
-      const completedCounts = await db.select({
-        moduleId: lessons.moduleId,
-        completed: sql<number>`count(*)`.mapWith(Number),
-      })
-        .from(userProgress)
-        .innerJoin(lessons, eq(userProgress.lessonId, lessons.id))
-        .where(and(
-          eq(userProgress.userId, dbUser[0].id),
-          eq(userProgress.status, "completed")
-        ))
-        .groupBy(lessons.moduleId);
+  if (dbUser.length > 0) {
+    // Get completed lessons per module
+    const completedCounts = await db.select({
+      moduleId: lessons.moduleId,
+      completed: sql<number>`count(*)`.mapWith(Number),
+    })
+      .from(userProgress)
+      .innerJoin(lessons, eq(userProgress.lessonId, lessons.id))
+      .where(and(
+        eq(userProgress.userId, dbUser[0].id),
+        eq(userProgress.status, "completed")
+      ))
+      .groupBy(lessons.moduleId);
 
-      completedCounts.forEach(c => {
-        progressMap[c.moduleId] = c.completed;
-      });
-    }
+    completedCounts.forEach(c => {
+      progressMap[c.moduleId] = c.completed;
+    });
   }
 
   return (

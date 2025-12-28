@@ -9,7 +9,7 @@ export default function InstallPage() {
                 <div className="container mx-auto px-4 h-16 flex items-center justify-between">
                     <Link href="/" className="flex items-center gap-2">
                         <Terminal className="w-6 h-6 text-accent-primary" />
-                        <span className="text-xl font-bold tracking-tighter text-text-header">CODEQUEST</span>
+                        <span className="text-xl font-bold tracking-tighter text-text-header">ALGOCHARM</span>
                     </Link>
                 </div>
             </header>
@@ -129,7 +129,7 @@ export default function InstallPage() {
 
             <footer className="border-t border-border-brutal py-8 bg-bg-secondary">
                 <div className="container mx-auto px-4 text-center text-xs text-gray-600">
-                    © 2025 CODEQUEST. SYSTEM ALL RIGHTS RESERVED.
+                    © 2025 ALGOCHARM. ALL RIGHTS RESERVED.
                 </div>
             </footer>
         </div>

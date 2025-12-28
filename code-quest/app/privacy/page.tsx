@@ -9,7 +9,7 @@ export default function PrivacyPolicyPage() {
                 <div className="container mx-auto px-4 h-16 flex items-center justify-between">
                     <Link href="/" className="flex items-center gap-2">
                         <Terminal className="w-6 h-6 text-accent-primary" />
-                        <span className="text-xl font-bold tracking-tighter text-text-header">CODEQUEST</span>
+                        <span className="text-xl font-bold tracking-tighter text-text-header">ALGOCHARM</span>
                     </Link>
                 </div>
             </header>
@@ -35,7 +35,7 @@ export default function PrivacyPolicyPage() {
                         <section className="tech-border bg-bg-secondary p-6">
                             <h2 className="text-xl font-bold text-text-header mb-4">1. Introduction</h2>
                             <p className="text-text-body text-sm leading-relaxed">
-                                CodeQuest ("we", "our", or "us") is committed to protecting your privacy.
+                                AlgoCharm ("we", "our", or "us") is committed to protecting your privacy.
                                 This Privacy Policy explains how we collect, use, and safeguard your information
                                 when you use our platform and services.
                             </p>
@@ -142,7 +142,7 @@ export default function PrivacyPolicyPage() {
                             <h2 className="text-xl font-bold text-text-header mb-4">10. Contact Us</h2>
                             <p className="text-text-body text-sm leading-relaxed">
                                 If you have questions about this Privacy Policy, please contact us at:
-                                <span className="text-accent-secondary ml-1">privacy@codequest.dev</span>
+                                <span className="text-accent-secondary ml-1">divyanshu1447@gmail.com</span>
                             </p>
                         </section>
                     </div>
@@ -167,7 +167,7 @@ export default function PrivacyPolicyPage() {
 
             <footer className="border-t border-border-brutal py-8 bg-bg-secondary">
                 <div className="container mx-auto px-4 text-center text-xs text-gray-600">
-                    © 2025 CODEQUEST. SYSTEM ALL RIGHTS RESERVED.
+                    © 2025 ALGOCHARM. ALL RIGHTS RESERVED.
                 </div>
             </footer>
         </div>

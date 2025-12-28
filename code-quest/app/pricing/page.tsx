@@ -9,7 +9,7 @@ export default function PricingPage() {
                 <div className="container mx-auto px-4 h-16 flex items-center justify-between">
                     <Link href="/" className="flex items-center gap-2">
                         <Terminal className="w-6 h-6 text-accent-primary" />
-                        <span className="text-xl font-bold tracking-tighter text-text-header">CODEQUEST</span>
+                        <span className="text-xl font-bold tracking-tighter text-text-header">ALGOCHARM</span>
                     </Link>
                     <nav className="hidden md:flex items-center gap-6 text-sm font-medium text-text-body">
                         <Link href="/" className="hover:text-accent-primary transition-colors">Home</Link>
@@ -114,7 +114,7 @@ export default function PricingPage() {
                                     </button>
 
                                     <p className="text-center text-xs text-text-body mt-4">
-                                        Secure payment via Stripe
+                                        Secure payment
                                     </p>
                                 </div>
                             </div>
@@ -218,7 +218,7 @@ export default function PricingPage() {
 
             <footer className="border-t border-border-brutal py-8 bg-bg-secondary">
                 <div className="container mx-auto px-4 text-center text-xs text-gray-600">
-                    © 2025 CODEQUEST. SYSTEM ALL RIGHTS RESERVED.
+                    © 2025 ALGOCHARM. ALL RIGHTS RESERVED.
                 </div>
             </footer>
         </div>

@@ -9,7 +9,7 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "CodeQuest | Master DSA",
+  title: "AlgoCharm | Master DSA",
   description: "The gamified platform for mastering Data Structures and Algorithms.",
 };
 

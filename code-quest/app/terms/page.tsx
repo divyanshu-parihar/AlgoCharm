@@ -9,7 +9,7 @@ export default function TermsOfServicePage() {
                 <div className="container mx-auto px-4 h-16 flex items-center justify-between">
                     <Link href="/" className="flex items-center gap-2">
                         <Terminal className="w-6 h-6 text-accent-primary" />
-                        <span className="text-xl font-bold tracking-tighter text-text-header">CODEQUEST</span>
+                        <span className="text-xl font-bold tracking-tighter text-text-header">ALGOCHARM</span>
                     </Link>
                 </div>
             </header>
@@ -35,7 +35,7 @@ export default function TermsOfServicePage() {
                         <section className="tech-border bg-bg-secondary p-6">
                             <h2 className="text-xl font-bold text-text-header mb-4">1. Acceptance of Terms</h2>
                             <p className="text-text-body text-sm leading-relaxed">
-                                By accessing or using CodeQuest ("the Platform"), you agree to be bound by these Terms of Service.
+                                By accessing or using AlgoCharm ("the Platform"), you agree to be bound by these Terms of Service.
                                 If you do not agree to these terms, please do not use the Platform.
                             </p>
                         </section>
@@ -43,7 +43,7 @@ export default function TermsOfServicePage() {
                         <section className="tech-border bg-bg-secondary p-6">
                             <h2 className="text-xl font-bold text-text-header mb-4">2. Description of Service</h2>
                             <p className="text-text-body text-sm leading-relaxed">
-                                CodeQuest is a gamified algorithm learning platform that provides coding challenges,
+                                AlgoCharm is a gamified algorithm learning platform that provides coding challenges,
                                 educational content, and a CLI tool for practicing data structures and algorithms.
                                 The service is provided on a subscription basis.
                             </p>
@@ -98,7 +98,7 @@ export default function TermsOfServicePage() {
                             <h2 className="text-xl font-bold text-text-header mb-4">6. Intellectual Property</h2>
                             <p className="text-text-body text-sm leading-relaxed">
                                 All content on the Platform, including but not limited to problems, solutions, educational materials,
-                                and the CLI tool, is the intellectual property of CodeQuest and is protected by copyright laws.
+                                and the CLI tool, is the intellectual property of AlgoCharm and is protected by copyright laws.
                                 You may not copy, distribute, or create derivative works without express permission.
                             </p>
                         </section>
@@ -124,7 +124,7 @@ export default function TermsOfServicePage() {
                             <h2 className="text-xl font-bold text-text-header mb-4">9. Contact</h2>
                             <p className="text-text-body text-sm leading-relaxed">
                                 For questions about these Terms of Service, please contact us at:
-                                <span className="text-accent-primary ml-1">legal@codequest.dev</span>
+                                <span className="text-accent-primary ml-1">divyanshu1447@gmail.com</span>
                             </p>
                         </section>
                     </div>
@@ -149,7 +149,7 @@ export default function TermsOfServicePage() {
 
             <footer className="border-t border-border-brutal py-8 bg-bg-secondary">
                 <div className="container mx-auto px-4 text-center text-xs text-gray-600">
-                    © 2025 CODEQUEST. SYSTEM ALL RIGHTS RESERVED.
+                    © 2025 ALGOCHARM. ALL RIGHTS RESERVED.
                 </div>
             </footer>
         </div>
