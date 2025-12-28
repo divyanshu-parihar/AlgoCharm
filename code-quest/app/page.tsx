@@ -29,6 +29,12 @@ export default function Home() {
               </SignInButton>
             </SignedOut>
             <SignedIn>
+              <a href="/dashboard" className="text-sm font-bold text-accent-primary hover:text-white transition-colors">
+                DASHBOARD
+              </a>
+              <a href="/campaign" className="text-sm font-bold text-accent-secondary hover:text-white transition-colors">
+                MISSIONS
+              </a>
               <UserButton
                 appearance={{
                   elements: {
