@@ -172,7 +172,7 @@ export default async function LessonPage({ params }: { params: Promise<{ module:
                 <div className="absolute -inset-1 bg-gradient-to-r from-accent-primary to-purple-600 rounded-lg blur opacity-25 group-hover:opacity-50 transition"></div>
                 <div className="relative bg-black border border-white/20 rounded-lg p-4 font-mono text-sm flex items-center justify-between">
                   <span className="text-green-400">
-                    <span className="text-gray-500">$</span> quest start {lesson.exerciseId}
+                    <span className="text-gray-500">$</span> charm start {lesson.exerciseId}
                   </span>
                   <button className="text-gray-500 hover:text-white transition-colors">
                     <Copy className="w-4 h-4" />
@@ -181,7 +181,7 @@ export default async function LessonPage({ params }: { params: Promise<{ module:
               </div>
 
               <p className="text-xs text-gray-600 text-center">
-                Don't have the CLI? <a href="#" className="text-accent-primary underline">Install Field Kit</a>
+                Don't have the CLI? <a href="/install" className="text-accent-primary underline">Install Field Kit</a>
               </p>
             </div>
           )}
