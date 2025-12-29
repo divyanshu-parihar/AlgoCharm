@@ -1287,7 +1287,6 @@ function generateCppStarter(id: string, title: string, desc: string, difficulty:
   const helpers = getRequiredHelpers(id);
   const helperCode = helpers.map(h => CPP_HELPERS[h]).join('\n\n');
 
-  // Priority: PROBLEM_DESCRIPTIONS > sig.description > db description > fallback
   const problemDesc = PROBLEM_DESCRIPTIONS[id]
 
   return `/*

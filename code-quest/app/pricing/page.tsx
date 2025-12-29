@@ -183,15 +183,15 @@ export default function PricingPage() {
                             <div className="tech-border bg-bg-secondary p-6">
                                 <h3 className="font-bold text-text-header mb-2">What payment methods do you accept?</h3>
                                 <p className="text-sm text-text-body">
-                                    We accept all major credit cards, debit cards, and other payment methods supported by Stripe.
+                                    We accept all major credit cards, debit cards, and other payment methods supported by our merchant of record, Paddle.
                                 </p>
                             </div>
 
                             <div className="tech-border bg-bg-secondary p-6">
                                 <h3 className="font-bold text-text-header mb-2">Do you offer refunds?</h3>
                                 <p className="text-sm text-text-body">
-                                    All payments are final and non-refundable. Refunds are only considered for verified billing mistakes.
-                                    See our <Link href="/terms" className="text-accent-primary hover:underline">Terms of Service</Link> for details.
+                                    Yes, we offer a 14-day money-back guarantee. If you're not satisfied, you can request a refund within 14 days of purchase.
+                                    See our <Link href="/refund" className="text-accent-primary hover:underline">Refund Policy</Link> for details.
                                 </p>
                             </div>
 
@@ -218,7 +218,7 @@ export default function PricingPage() {
 
             <footer className="border-t border-border-brutal py-8 bg-bg-secondary">
                 <div className="container mx-auto px-4 text-center text-xs text-gray-600">
-                    © 2025 ALGOCHARM. ALL RIGHTS RESERVED.
+                    © 2025 ALGOCHARM (operated by WorkBuzz). ALL RIGHTS RESERVED.
                 </div>
             </footer>
         </div>

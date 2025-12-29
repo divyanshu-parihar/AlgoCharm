@@ -377,7 +377,7 @@ export default function Home() {
                   </a>
 
                   <p className="text-xs text-text-body mt-4">
-                    Cancel anytime • Secure payment via Stripe
+                    Cancel anytime • Secure payment via Paddle
                   </p>
                 </div>
               </div>

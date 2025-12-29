@@ -33,15 +33,20 @@ export default function TermsOfServicePage() {
                     {/* Content */}
                     <div className="prose prose-invert max-w-none space-y-8">
                         <section className="tech-border bg-bg-secondary p-6">
+                            <h2 className="text-xl font-bold text-text-header mb-4">Company Information</h2>
+                            <p className="text-text-body text-sm leading-relaxed">
+                                <strong className="text-text-header">Legal Business Name:</strong> WorkBuzz<br />
+                                <strong className="text-text-header">Platform Name:</strong> AlgoCharm<br />
+                                <strong className="text-text-header">Contact Email:</strong> divyanshu1447@gmail.com
+                            </p>
+                        </section>
+
+                        <section className="tech-border bg-bg-secondary p-6">
                             <h2 className="text-xl font-bold text-text-header mb-4">1. Acceptance of Terms</h2>
                             <p className="text-text-body text-sm leading-relaxed mb-4">
                                 By accessing or using AlgoCharm ("the Platform"), operated by <strong className="text-text-header">WorkBuzz</strong>,
                                 you agree to be bound by these Terms of Service.
                                 If you do not agree to these terms, please do not use the Platform.
-                            </p>
-                            <p className="text-text-body text-sm leading-relaxed">
-                                <strong className="text-text-header">Legal Business Name:</strong> WorkBuzz<br />
-                                <strong className="text-text-header">Platform Name:</strong> AlgoCharm
                             </p>
                         </section>
 

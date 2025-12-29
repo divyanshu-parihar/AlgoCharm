@@ -50,40 +50,50 @@ export default function RefundPolicyPage() {
                         </section>
 
                         <section className="tech-border bg-bg-secondary p-6 border-accent-primary/30">
-                            <h2 className="text-xl font-bold text-text-header mb-4">3. Right to Cancel (14-Day Guarantee)</h2>
+                            <h2 className="text-xl font-bold text-text-header mb-4">3. Consumer Right to Cancel (14-Day Guarantee)</h2>
                             <p className="text-text-body text-sm leading-relaxed mb-4">
-                                You have the right to cancel your order and request a refund within <strong>14 days</strong> of your purchase without giving any reason.
+                                If you are a Consumer, you have the right to cancel this Agreement and return the Product within <strong>14 days</strong> without giving any reason. The cancellation period will expire after 14 days from the day after completion of the Transaction.
                             </p>
                             <p className="text-text-body text-sm leading-relaxed mb-4">
-                                To exercise your right to cancel, you must inform us of your decision by contacting our support team (or Paddle directly) via a clear statement.
+                                To meet the cancellation deadline, it is sufficient that you send us your communication concerning your exercise of the cancellation right before the expiration of the 14 day period.
                             </p>
                             <p className="text-text-body text-sm leading-relaxed">
-                                <strong>Deadline:</strong> The cancellation period will expire after 14 days from the day of the conclusion of the contract (the day the transaction was completed).
+                                To cancel your order, you must inform us (WorkBuzz) or Paddle of your decision. You may contact us at <span className="text-accent-primary">divyanshu1447@gmail.com</span>.
                             </p>
                         </section>
 
                         <section className="tech-border bg-bg-secondary p-6">
-                            <h2 className="text-xl font-bold text-text-header mb-4">4. Effects of Cancellation</h2>
+                            <h2 className="text-xl font-bold text-text-header mb-4">4. Effect of Cancellation</h2>
                             <p className="text-text-body text-sm leading-relaxed mb-4">
-                                If you cancel this contract within the 14-day period, we will reimburse to you all payments received from you. We will make the reimbursement without undue delay, and not later than 14 days after the day on which we are informed about your decision to cancel this contract.
+                                If you cancel this Agreement as permitted above, we will reimburse to you all payments received from you.
+                            </p>
+                            <p className="text-text-body text-sm leading-relaxed mb-4">
+                                We will make the reimbursement without undue delay, and not later than 14 days after the day on which we are informed about your decision to cancel this Agreement.
                             </p>
                             <p className="text-text-body text-sm leading-relaxed">
-                                We will make the reimbursement using the same means of payment as you used for the initial transaction, unless you have expressly agreed otherwise; in any event, you will not incur any fees as a result of the reimbursement.
+                                We will make the reimbursement using the same means of payment as you used for the initial transaction and you will not incur any fees as a result of the reimbursement.
                             </p>
                         </section>
 
                         <section className="tech-border bg-bg-secondary p-6">
-                            <h2 className="text-xl font-bold text-text-header mb-4">5. Exceptions to the Right to Cancel</h2>
-                            <p className="text-text-body text-sm leading-relaxed mb-4">
-                                Please be aware that if you purchase digital content that is immediately available for download or use (such as software licenses or direct access SaaS tools), you acknowledge that by accessing the content, you may lose your right of withdrawal once the download or access has started, provided that we have received your express consent and acknowledgment of this waiver.
-                            </p>
+                            <h2 className="text-xl font-bold text-text-header mb-4">5. Exception to the Right to Cancel</h2>
                             <p className="text-text-body text-sm leading-relaxed">
-                                However, even in this event, if the digital content is faulty, not as described, or fit for purpose, you retain your consumer rights to a refund or repair.
+                                Your right as a Consumer to cancel your order does not apply to the supply of Digital Content that you have started to download, stream or otherwise acquire and to Products which you have had the benefit of.
                             </p>
                         </section>
 
                         <section className="tech-border bg-bg-secondary p-6">
-                            <h2 className="text-xl font-bold text-text-header mb-4">6. Contact Us</h2>
+                            <h2 className="text-xl font-bold text-text-header mb-4">6. Paddle Refund Policy</h2>
+                            <p className="text-text-body text-sm leading-relaxed mb-4">
+                                Refunds are provided at the sole discretion of Paddle and on a case-by-case basis and may be refused. Paddle will refuse a refund request if they find evidence of fraud, refund abuse, or other manipulative behaviour.
+                            </p>
+                            <p className="text-text-body text-sm leading-relaxed">
+                                This does not affect your rights as a Consumer in relation to Products which are not as described, faulty or not fit for purpose.
+                            </p>
+                        </section>
+
+                        <section className="tech-border bg-bg-secondary p-6">
+                            <h2 className="text-xl font-bold text-text-header mb-4">7. Contact Us</h2>
                             <p className="text-text-body text-sm leading-relaxed">
                                 To request a refund or if you have questions regarding this policy, please contact us at:
                             </p>
