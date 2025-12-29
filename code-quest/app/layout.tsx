@@ -24,6 +24,7 @@ export default function RootLayout({
       <html lang="en">
         <body className={`${jetbrainsMono.variable} font-mono antialiased bg-[#0B0B0B] text-[#CCCCCC]`}>
           {children}
+          <Analytics />
         </body>
       </html>
     </ClerkProvider>
