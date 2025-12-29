@@ -26,7 +26,7 @@ export default function TermsOfServicePage() {
                             TERMS OF SERVICE
                         </h1>
                         <p className="text-text-body">
-                            Last updated: December 28, 2025
+                            Last updated: February 26, 2025
                         </p>
                     </div>
 
@@ -68,23 +68,14 @@ export default function TermsOfServicePage() {
 
                         <section className="tech-border bg-bg-secondary p-6 border-accent-primary">
                             <h2 className="text-xl font-bold text-accent-primary mb-4">4. Refund Policy</h2>
-                            <div className="bg-accent-primary/10 border border-accent-primary/30 rounded p-4 mb-4">
-                                <p className="text-text-header text-sm font-bold">
-                                    ⚠️ NO REFUNDS POLICY
-                                </p>
-                            </div>
                             <p className="text-text-body text-sm leading-relaxed mb-4">
-                                <strong className="text-text-header">All payments made to AlgoCharm (operated by WorkBuzz) are final and non-refundable.</strong> Once a payment is made,
-                                no refunds will be issued under any circumstances, with the following sole exception:
+                                Purchases made on AlgoCharm (operated by WorkBuzz) are handled by our Merchant of Record, Paddle.com.
                             </p>
                             <p className="text-text-body text-sm leading-relaxed mb-4">
-                                <strong className="text-text-header">Exception:</strong> Refunds may be considered only in cases of serious
-                                or genuine billing mistakes (such as duplicate charges or technical payment errors) that are
-                                verified and approved at the sole discretion of the owner of WorkBuzz. To request a review,
-                                contact us with proof of the error within 7 days of the transaction.
+                                You have the right to cancel your order and request a refund within <strong>14 days</strong> of your purchase without giving any reason.
                             </p>
                             <p className="text-text-body text-sm">
-                                For full details, see our <a href="/refund" className="text-accent-primary hover:underline">Refund Policy</a>.
+                                For full details on cancellation rights, exceptions, and how to request a refund, please see our dedicated <a href="/refund" className="text-accent-primary hover:underline">Refund Policy</a>.
                             </p>
                         </section>
 
@@ -116,7 +107,6 @@ export default function TermsOfServicePage() {
                             <p className="text-text-body text-sm leading-relaxed">
                                 We reserve the right to terminate or suspend your account at any time for violations of these
                                 Terms of Service. Upon termination, your right to use the Platform will immediately cease.
-                                No refunds will be provided for terminated accounts.
                             </p>
                         </section>
 
