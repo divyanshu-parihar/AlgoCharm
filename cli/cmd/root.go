@@ -76,7 +76,7 @@ func initConfig() {
 
 	viper.SetEnvPrefix("CODEQUEST")
 	viper.AutomaticEnv()
-	viper.SetDefault("server_url", "http://localhost:3000")
+	viper.SetDefault("server_url", "https://charm.workbuzz.me")
 
 	if err := viper.ReadInConfig(); err == nil {
 		if debug {

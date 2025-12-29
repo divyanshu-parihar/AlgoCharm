@@ -19,7 +19,7 @@ const (
 	DefaultRetries = 3
 
 	// DefaultServerURL is the default API server
-	DefaultServerURL = "http://localhost:3000"
+	DefaultServerURL = "https://charm.workbuzz.me"
 )
 
 // Client is the HTTP client for the CodeQuest API
