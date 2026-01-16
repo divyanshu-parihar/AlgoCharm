@@ -48,7 +48,7 @@ func Execute() {
 func init() {
 	cobra.OnInitialize(initConfig)
 
-	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default: ~/.codequest.yaml)")
+	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default: ~/.charm.yaml)")
 	rootCmd.PersistentFlags().BoolVar(&debug, "debug", false, "enable debug output")
 	rootCmd.PersistentFlags().String("server", "", "API server URL")
 
@@ -71,10 +71,10 @@ func initConfig() {
 
 		viper.AddConfigPath(home)
 		viper.SetConfigType("yaml")
-		viper.SetConfigName(".codequest")
+		viper.SetConfigName(".charm")
 	}
 
-	viper.SetEnvPrefix("CODEQUEST")
+	viper.SetEnvPrefix("CHARM")
 	viper.AutomaticEnv()
 	viper.SetDefault("server_url", "https://charm.workbuzz.me")
 
@@ -103,7 +103,7 @@ func initAPIClient() {
 func requireAPIKey() (string, error) {
 	apiKey := viper.GetString("api_key")
 	if apiKey == "" {
-		return "", fmt.Errorf("not authenticated - run 'quest login <api-key>' first")
+		return "", fmt.Errorf("not authenticated - run 'charm login <api-key>' first")
 	}
 	return apiKey, nil
 }
@@ -113,7 +113,7 @@ func getConfigPath() string {
 		return cfgFile
 	}
 	home, _ := os.UserHomeDir()
-	return filepath.Join(home, ".codequest.yaml")
+	return filepath.Join(home, ".charm.yaml")
 }
 
 func saveConfig() error {

@@ -22,8 +22,8 @@ var startCmd = &cobra.Command{
 This creates a new directory with your solution file ready to edit.
 
 Examples:
-  quest start two-sum
-  quest start spin-grid --lang typescript`,
+  charm start two-sum
+  charm start spin-grid --lang typescript`,
 	Args: cobra.ExactArgs(1),
 	Run:  runStart,
 }
@@ -75,8 +75,8 @@ func runStart(cmd *cobra.Command, args []string) {
 		return
 	}
 
-	// Create hidden .codequest folder for metadata
-	hiddenDir := filepath.Join(missionDir, ".codequest")
+	// Create hidden .charm folder for metadata
+	hiddenDir := filepath.Join(missionDir, ".charm")
 	if err := os.MkdirAll(hiddenDir, 0755); err != nil {
 		ui.PrintError(fmt.Sprintf("Failed to create metadata directory: %v", err))
 		return
@@ -125,7 +125,7 @@ func runStart(cmd *cobra.Command, args []string) {
 		"api_key":     apiKey,
 	}
 	questJSON, _ := json.MarshalIndent(questMeta, "", "  ")
-	questPath := filepath.Join(hiddenDir, "quest.json")
+	questPath := filepath.Join(hiddenDir, "mission.json")
 	os.WriteFile(questPath, questJSON, 0644)
 
 	// For Go, write go.mod in main folder (needed for compilation)
@@ -134,8 +134,8 @@ func runStart(cmd *cobra.Command, args []string) {
 		os.WriteFile(filepath.Join(missionDir, "go.mod"), []byte(goMod), 0644)
 	}
 
-	// Add .gitignore to hide .codequest folder
-	gitignore := ".codequest/\n"
+	// Add .gitignore to hide .charm folder
+	gitignore := ".charm/\n"
 	os.WriteFile(filepath.Join(missionDir, ".gitignore"), []byte(gitignore), 0644)
 
 	ui.PrintSuccess("Mission initialized!")
@@ -143,8 +143,8 @@ func runStart(cmd *cobra.Command, args []string) {
 	fmt.Printf("  %s\n", ui.Cyan.Sprintf("cd %s", missionID))
 	fmt.Println()
 	ui.PrintStep(1, "Open solution"+ext+" and implement your solution")
-	ui.PrintStep(2, "Run 'quest test' to check your work")
-	ui.PrintStep(3, "Run 'quest submit' when all tests pass")
+	ui.PrintStep(2, "Run 'charm test' to check your work")
+	ui.PrintStep(3, "Run 'charm submit' when all tests pass")
 	fmt.Println()
 }
 

@@ -5,6 +5,27 @@ import { db } from "@/db";
 import { exercises } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { PROBLEM_DESCRIPTIONS } from "./problem-descriptions";
+import completeListData from "../completeList.json";
+
+// Type for the completeList.json data
+interface NeetCodeProblem {
+  result: {
+    id: string;
+    name: string;
+    description: string;
+    difficulty: string;
+    starterCode?: { [language: string]: string };
+  };
+}
+
+// Get starterCode from completeList.json by NeetCode problem ID
+function getStarterCodeFromJSON(neetcodeId: string): { [language: string]: string } | null {
+  const problem = (completeListData as Record<string, NeetCodeProblem>)[neetcodeId];
+  if (problem?.result?.starterCode) {
+    return problem.result.starterCode;
+  }
+  return null;
+}
 
 export interface MissionFiles {
   [filename: string]: string;
@@ -1091,6 +1112,164 @@ public:
 };`
 };
 
+// Mapping from internal mission IDs to NeetCode problem IDs
+// This maps our custom slugs to the NeetCode problem IDs in completeList.json
+const MISSION_TO_NEETCODE_ID: Record<string, string> = {
+  // DATA VAULT (Arrays & Hashing)
+  "spot-repeat": "duplicate-integer",
+  "letter-shuffle": "is-anagram",
+  "pair-hunt": "two-integer-sum",
+  "sort-letters": "anagram-groups",
+  "most-common": "top-k-elements-in-list",
+  "encode-decode": "string-encode-and-decode",
+  "multiply-rest": "products-of-array-discluding-self",
+  "grid-valid": "valid-sudoku",
+  "streak-finder": "longest-consecutive-sequence",
+  // DUAL SCANNERS (Two Pointers)
+  "mirror-check": "is-palindrome",
+  "sorted-pair": "two-integer-sum-ii",
+  "triple-match": "three-integer-sum",
+  "max-basin": "max-water-container",
+  "flood-volume": "trapping-rain-water",
+  // MOVING FRAME (Sliding Window)
+  "peak-profit": "buy-and-sell-crypto",
+  "unique-streak": "longest-substring-without-duplicates",
+  "max-same-char": "longest-repeating-substring-with-replacement",
+  "hidden-pattern": "permutation-string",
+  "smallest-cover": "minimum-window-with-characters",
+  "frame-maximum": "sliding-window-maximum",
+  // LIFO TOWER (Stack)
+  "bracket-match": "validate-parentheses",
+  "mini-stack": "minimum-stack",
+  "reverse-calc": "evaluate-reverse-polish-notation",
+  "heat-wave": "daily-temperatures",
+  "car-convoy": "car-fleet",
+  "biggest-bar": "largest-rectangle-in-histogram",
+  // DIVIDE CONQUER (Binary Search)
+  "half-search": "binary-search",
+  "grid-hunt": "search-2d-matrix",
+  "banana-speed": "eating-bananas",
+  "rotated-min": "find-minimum-in-rotated-sorted-array",
+  "rotated-search": "find-target-in-rotated-sorted-array",
+  "time-cache": "time-based-key-value-store",
+  "middle-ground": "median-of-two-sorted-arrays",
+  // NUMBER THEORY (Math & Geometry)
+  "spin-grid": "rotate-image",
+  "spiral-read": "spiral-matrix",
+  "zero-grid": "set-matrix-zeroes",
+  "happy-loop": "non-cyclical-number",
+  "add-one": "plus-one",
+  "power-calc": "pow-x-n",
+  "string-multiply": "multiply-strings",
+  "square-detect": "count-squares",
+  // BINARY LOGIC (Bit Manipulation)
+  "solo-number": "single-number",
+  "count-ones": "number-of-one-bits",
+  "bit-count": "counting-bits",
+  "flip-bits": "reverse-bits",
+  "missing-one": "missing-number",
+  "no-op-add": "sum-of-two-integers",
+  "flip-integer": "reverse-integer",
+  // CHAIN LINKS (Linked List)
+  "flip-list": "reverse-a-linked-list",
+  "merge-pair": "merge-two-sorted-linked-lists",
+  "loop-check": "linked-list-cycle-detection",
+  "rearrange-list": "reorder-linked-list",
+  "trim-end": "remove-node-from-end-of-linked-list",
+  "clone-random": "copy-linked-list-with-random-pointer",
+  "add-lists": "add-two-numbers",
+  "find-clone": "find-duplicate-integer",
+  "memory-cache": "lru-cache",
+  "merge-many": "merge-k-sorted-linked-lists",
+  "group-flip": "reverse-nodes-in-k-group",
+  // BRANCHING PATHS (Trees)
+  "mirror-tree": "invert-a-binary-tree",
+  "tree-depth": "depth-of-binary-tree",
+  "tree-width": "binary-tree-diameter",
+  "tree-balance": "balanced-binary-tree",
+  "twin-trees": "same-binary-tree",
+  "tree-in-tree": "subtree-of-a-binary-tree",
+  "common-parent": "lowest-common-ancestor-in-binary-search-tree",
+  "level-scan": "binary-tree-level-order-traversal",
+  "right-view": "binary-tree-right-side-view",
+  "good-nodes": "count-good-nodes-in-binary-tree",
+  "valid-bst": "valid-binary-search-tree",
+  "kth-smallest": "kth-smallest-integer-in-bst",
+  "build-tree": "binary-tree-from-preorder-and-inorder-traversal",
+  "max-path": "binary-tree-maximum-path-sum",
+  "pack-tree": "serialize-and-deserialize-binary-tree",
+  // PRIORITY LANES (Heap)
+  "kth-stream": "kth-largest-integer-in-a-stream",
+  "stone-weight": "last-stone-weight",
+  "nearest-points": "k-closest-points-to-origin",
+  "kth-array": "kth-largest-element-in-an-array",
+  "task-order": "task-scheduler",
+  "tweet-feed": "design-twitter-feed",
+  "stream-median": "find-median-in-a-data-stream",
+  // TRIAL ERROR (Backtracking)
+  "power-set": "subsets",
+  "sum-combos": "combination-target-sum",
+  "sum-combos-2": "combination-target-sum-ii",
+  "all-orders": "permutations",
+  "power-set-2": "subsets-ii",
+  "bracket-gen": "generate-parentheses",
+  "word-grid": "search-for-word",
+  "split-palindrome": "palindrome-partitioning",
+  "phone-letters": "combinations-of-a-phone-number",
+  "queen-puzzle": "n-queens",
+  // PREFIX NETWORKS (Tries)
+  "build-prefix": "implement-prefix-tree",
+  "word-finder": "design-word-search-data-structure",
+  "grid-search": "search-for-word-ii",
+  // NETWORK MAPS (Graphs)
+  "island-count": "count-number-of-islands",
+  "max-island": "max-area-of-island",
+  "copy-network": "clone-graph",
+  "gate-distance": "islands-and-treasure",
+  "rot-timer": "rotting-fruit",
+  "ocean-flow": "pacific-atlantic-water-flow",
+  "capture-zone": "surrounded-regions",
+  "class-order": "course-schedule",
+  "class-order-2": "course-schedule-ii",
+  "valid-tree": "valid-tree",
+  "component-count": "count-connected-components",
+  "extra-edge": "redundant-connection",
+  "word-ladder": "word-ladder",
+  // ROUTE OPTIMIZATION (Advanced Graphs)
+  "signal-time": "network-delay-time",
+  "flight-path": "reconstruct-flight-path",
+  "connect-cost": "min-cost-to-connect-points",
+  "swim-level": "swim-in-rising-water",
+  "alien-order": "foreign-dictionary",
+  "budget-flights": "cheapest-flight-path",
+  // MEMORY LANE (1D Dynamic Programming)
+  "step-climb": "climbing-stairs",
+  "cheap-stairs": "min-cost-climbing-stairs",
+  "home-heist": "house-robber",
+  "home-heist-2": "house-robber-ii",
+  "long-palindrome": "longest-palindromic-substring",
+  "count-palindrome": "palindromic-substrings",
+  "decode-path": "decode-ways",
+  "coin-change": "coin-change",
+  "max-multiply": "maximum-product-subarray",
+  "word-split": "word-break",
+  "subarray-max": "maximum-subarray",
+  "split-sum": "partition-equal-subset-sum",
+  // GRID GAME (2D Dynamic Programming)
+  "unique-paths": "count-paths",
+  "edit-distance": "edit-distance",
+  "longest-common": "longest-common-subsequence",
+  "growing-sequence": "longest-increasing-subsequence",
+  "pick-jobs": "target-sum",
+  "stock-cooldown": "buy-and-sell-crypto-with-cooldown",
+  "triangle-split": "burst-balloons",
+  "coin-combos": "coin-change-ii",
+  "interleave-check": "interleaving-string",
+  "pattern-match": "distinct-subsequences",
+  "word-split-2": "word-break-ii",
+  "regular-match": "regular-expression-matching",
+};
+
 export const MissionService = {
   async getMissionById(missionId: string): Promise<Mission | null> {
     const result = await db.select().from(exercises).where(eq(exercises.id, missionId));
@@ -1102,6 +1281,22 @@ export const MissionService = {
     const exercise = result[0];
     const sig = PROBLEM_SIGNATURES[missionId] || DEFAULT_SIGNATURE;
 
+    // Try to get starterCode from completeList.json first
+    const neetcodeId = MISSION_TO_NEETCODE_ID[missionId] || missionId;
+    const jsonStarterCode = getStarterCodeFromJSON(neetcodeId);
+
+    // Use JSON starterCode if available, otherwise fallback to generated code
+    const starterCode: { [language: string]: string } = {
+      go: jsonStarterCode?.go || generateGoStarter(exercise.id, exercise.title, exercise.description || "", exercise.difficulty || "medium", sig),
+      typescript: jsonStarterCode?.javascript || generateTsStarter(exercise.id, exercise.title, exercise.description || "", exercise.difficulty || "medium", sig),
+      cpp: jsonStarterCode?.cpp || generateCppStarter(exercise.id, exercise.title, exercise.description || "", exercise.difficulty || "medium", sig),
+    };
+
+    // Add additional languages from JSON if available
+    if (jsonStarterCode?.python) starterCode.python = jsonStarterCode.python;
+    if (jsonStarterCode?.java) starterCode.java = jsonStarterCode.java;
+    if (jsonStarterCode?.csharp) starterCode.csharp = jsonStarterCode.csharp;
+
     return {
       id: exercise.id,
       title: exercise.title,
@@ -1112,11 +1307,7 @@ export const MissionService = {
       output_type: sig.outputType.ts,
       function_name: sig.functionName,
       examples: sig.examples,
-      starter_code: {
-        go: generateGoStarter(exercise.id, exercise.title, exercise.description || "", exercise.difficulty || "medium", sig),
-        typescript: generateTsStarter(exercise.id, exercise.title, exercise.description || "", exercise.difficulty || "medium", sig),
-        cpp: generateCppStarter(exercise.id, exercise.title, exercise.description || "", exercise.difficulty || "medium", sig),
-      },
+      starter_code: starterCode,
       files: {}
     };
   }

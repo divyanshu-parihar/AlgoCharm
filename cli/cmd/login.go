@@ -11,14 +11,14 @@ import (
 
 var loginCmd = &cobra.Command{
 	Use:   "login <api-key>",
-	Short: "Authenticate with your CodeQuest API key",
-	Long: `Authenticate the Field Kit with your CodeQuest account.
+	Short: "Authenticate with your Charm API key",
+	Long: `Authenticate the Field Kit with your Charm account.
 
 You can find your API key in your dashboard at:
-  https://codequest.dev/dashboard
+  https://charm.workbuzz.me/dashboard
 
 Example:
-  quest login cq_abc123xyz`,
+  charm login cq_abc123xyz`,
 	Args: cobra.ExactArgs(1),
 	Run:  runLogin,
 }
@@ -56,7 +56,7 @@ func runLogin(cmd *cobra.Command, args []string) {
 		sp.Fail("Invalid API key")
 		fmt.Println()
 		ui.PrintError(resp.Error)
-		fmt.Println("  Check your API key in the CodeQuest dashboard.")
+		fmt.Println("  Check your API key in the Charm dashboard.")
 		return
 	}
 
@@ -79,6 +79,6 @@ func runLogin(cmd *cobra.Command, args []string) {
 	fmt.Println()
 	fmt.Println("  Your credentials are saved. You're ready to start!")
 	fmt.Println()
-	ui.PrintStep(1, "Start a mission: "+ui.Cyan.Sprint("quest start <mission-id>"))
+	ui.PrintStep(1, "Start a mission: "+ui.Cyan.Sprint("charm start <mission-id>"))
 	fmt.Println()
 }

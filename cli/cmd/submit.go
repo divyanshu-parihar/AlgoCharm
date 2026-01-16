@@ -21,12 +21,12 @@ var submitCmd = &cobra.Command{
 This command sends your output hash to the server, which verifies
 it matches the expected results. If successful, you earn XP!
 
-You must run 'quest test' first to generate a valid session.
+You must run 'charm test' first to generate a valid session.
 
 Example:
   cd two-sum
-  quest test
-  quest submit`,
+  charm test
+  charm submit`,
 	Run: runSubmit,
 }
 
@@ -47,8 +47,8 @@ func runSubmit(cmd *cobra.Command, args []string) {
 		return
 	}
 
-	// Try hidden .codequest folder first, then fallback to root
-	sessionPath := filepath.Join(cwd, ".codequest", "session.json")
+	// Try hidden .charm folder first, then fallback to root
+	sessionPath := filepath.Join(cwd, ".charm", "session.json")
 	if _, err := os.Stat(sessionPath); os.IsNotExist(err) {
 		sessionPath = filepath.Join(cwd, ".session.json")
 	}
@@ -56,13 +56,13 @@ func runSubmit(cmd *cobra.Command, args []string) {
 	sessionData, err := os.ReadFile(sessionPath)
 	if err != nil {
 		ui.PrintError("No test session found")
-		fmt.Println("  Run 'quest test' first to generate a session.")
+		fmt.Println("  Run 'charm test' first to generate a session.")
 		return
 	}
 
 	var session api.LocalSession
 	if err := json.Unmarshal(sessionData, &session); err != nil {
-		ui.PrintError("Invalid session file - run 'quest test' again")
+		ui.PrintError("Invalid session file - run 'charm test' again")
 		return
 	}
 
@@ -76,7 +76,7 @@ func runSubmit(cmd *cobra.Command, args []string) {
 		fmt.Printf("  Session was valid until: %s\n", session.ExpiresAt.Format(time.RFC822))
 		fmt.Printf("  Current time:            %s\n", time.Now().Format(time.RFC822))
 		fmt.Println()
-		fmt.Println("  Run 'quest test' to get a new session.")
+		fmt.Println("  Run 'charm test' to get a new session.")
 		return
 	}
 
@@ -110,7 +110,7 @@ func runSubmit(cmd *cobra.Command, args []string) {
 		ui.PrintError(resp.Message)
 		fmt.Println()
 		fmt.Println("  Your outputs don't match the expected results.")
-		fmt.Println("  Check your solution and run 'quest test' again.")
+		fmt.Println("  Check your solution and run 'charm test' again.")
 		return
 	}
 
@@ -124,7 +124,7 @@ func runSubmit(cmd *cobra.Command, args []string) {
 	fmt.Println()
 	ui.PrintSuccess("Mission complete!")
 	fmt.Println()
-	fmt.Println("  Continue your journey:", ui.Cyan.Sprint("quest list"))
+	fmt.Println("  Continue your journey:", ui.Cyan.Sprint("charm list"))
 	fmt.Println()
 }
 

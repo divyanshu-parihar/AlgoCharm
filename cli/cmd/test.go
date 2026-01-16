@@ -27,11 +27,11 @@ This command:
   3. Computes a verification hash
   4. Saves the session for submission
 
-After tests pass, use 'quest submit' to claim your XP.
+After tests pass, use 'charm submit' to claim your XP.
 
 Example:
   cd two-sum
-  quest test`,
+  charm test`,
 	Run: runTest,
 }
 
@@ -46,28 +46,28 @@ func runTest(cmd *cobra.Command, args []string) {
 		return
 	}
 
-	// Try hidden .codequest folder first, then fallback to root
-	questPath := filepath.Join(cwd, ".codequest", "quest.json")
+	// Try hidden .charm folder first, then fallback to root
+	questPath := filepath.Join(cwd, ".charm", "mission.json")
 	if _, err := os.Stat(questPath); os.IsNotExist(err) {
-		questPath = filepath.Join(cwd, "quest.json")
+		questPath = filepath.Join(cwd, "mission.json")
 	}
 
 	questData, err := os.ReadFile(questPath)
 	if err != nil {
-		ui.PrintError("No quest.json found - are you in a mission directory?")
-		fmt.Println("  Use 'quest start <mission-id>' to begin a mission first.")
+		ui.PrintError("No mission.json found - are you in a mission directory?")
+		fmt.Println("  Use 'charm start <mission-id>' to begin a mission first.")
 		return
 	}
 
 	var questMeta map[string]interface{}
 	if err := json.Unmarshal(questData, &questMeta); err != nil {
-		ui.PrintError("Invalid quest.json format")
+		ui.PrintError("Invalid mission.json format")
 		return
 	}
 
 	missionID, _ := questMeta["id"].(string)
 	if missionID == "" {
-		ui.PrintError("Mission ID not found in quest.json")
+		ui.PrintError("Mission ID not found in mission.json")
 		return
 	}
 
@@ -188,7 +188,7 @@ func runTest(cmd *cobra.Command, args []string) {
 	}
 
 	// Save session for submission in hidden folder
-	hiddenDir := filepath.Join(cwd, ".codequest")
+	hiddenDir := filepath.Join(cwd, ".charm")
 	os.MkdirAll(hiddenDir, 0755)
 
 	sessionPath := filepath.Join(hiddenDir, "session.json")
@@ -204,7 +204,7 @@ func runTest(cmd *cobra.Command, args []string) {
 		fmt.Println()
 		ui.PrintSuccess("All visible tests passed!")
 		fmt.Println()
-		fmt.Println("  Ready to submit? Run:", ui.Cyan.Sprint("quest submit"))
+		fmt.Println("  Ready to submit? Run:", ui.Cyan.Sprint("charm submit"))
 		fmt.Println()
 		ui.Gray.Printf("  Session expires: %s\n", challenge.ExpiresAt.Format(time.RFC822))
 	}
